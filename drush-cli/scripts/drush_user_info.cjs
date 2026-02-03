@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { execSync } = require("child_process");
+const { execSync } = require('child_process');
 
 /**
  * Get user information
@@ -13,14 +13,14 @@ const { execSync } = require("child_process");
  */
 
 const args = process.argv.slice(2);
-const useRoles = args.includes("--roles");
-const useJson = args.includes("--json");
+const useRoles = args.includes('--roles');
+const useJson = args.includes('--json');
 
 try {
   if (useRoles) {
     // List users grouped by role
-    const rolesCommand = `drush php-eval '
-      $roles = \\Drupal::entityQuery("user")->execute();
+    const rolesCommand = `drush php:eval '
+      $roles = \\Drupal::entityQuery("user")->accessCheck(false)->execute();
       $users = \\Drupal\\user\\Entity\\User::loadMultiple($roles);
       $by_role = [];
       foreach ($users as $user) {
@@ -36,55 +36,67 @@ try {
         echo "\\n";
       }
     '`;
-    const output = execSync(rolesCommand, { encoding: "utf8" });
+    const output = execSync(rolesCommand, { encoding: 'utf8' });
     console.log(output.trim());
-  } else if (args.length > 0 && !args[0].startsWith("--")) {
+  } else if (args.length > 0 && !args[0].startsWith('--')) {
     // View specific user
     const userArg = args[0];
     const command = `drush user-information ${userArg}`;
-    const output = execSync(command, { encoding: "utf8" });
+    const output = execSync(command, { encoding: 'utf8' });
     console.log(output.trim());
   } else {
     // List all users
-    let command = "drush user-information";
+    const command = `drush php:eval '
+      $uids = \\Drupal::entityQuery("user")->accessCheck(false)->execute();
+      $users = \\Drupal\\user\\Entity\\User::loadMultiple($uids);
+      foreach ($users as $user) {
+        $name = $user->getAccountName() ?: "(no name)";
+        $mail = $user->getEmail() ?: "(no email)";
+        echo $user->id() . "|" . $name . "|" . $mail . "\\n";
+      }
+    '`;
     const output = execSync(command, {
-      encoding: "utf8",
+      encoding: 'utf8',
       maxBuffer: 10 * 1024 * 1024,
     });
 
     if (useJson) {
-      console.log(output.trim());
+      const lines = output.trim().split('\n');
+      const users = lines.map((line) => {
+        const [id, name, mail] = line.split('|');
+        return { id, name, mail };
+      });
+      console.log(JSON.stringify(users, null, 2));
     } else {
-      // Parse and format output
-      const lines = output.trim().split("\n");
-      console.log("\n--- Users Summary ---");
-      console.log(`Total users: ${lines.length - 1}`); // Subtract header line
+      const lines = output.trim().split('\n');
+      console.log('\n--- Users Summary ---');
+      console.log(`Total users: ${lines.length}`);
 
       // Show first 20 users
-      const displayLines = lines.slice(1, 21);
+      const displayLines = lines.slice(0, 20);
       displayLines.forEach((line) => {
-        const parts = line.split(/\s{2,}/);
-        if (parts.length >= 2) {
-          console.log(`  ${parts[0]} - ${parts[1]}`);
+        const parts = line.split('|');
+        if (parts.length >= 3) {
+          console.log(`  ${parts[0]} - ${parts[1]} (${parts[2]})`);
         }
       });
 
-      if (lines.length > 21) {
-        console.log(`\n  ... and ${lines.length - 21} more users`);
+      if (lines.length > 20) {
+        console.log(`\n  ... and ${lines.length - 20} more users`);
       }
     }
 
     // Show active/suspended stats
-    const statsCommand = `drush php-eval '
-      $active = \\Drupal::entityQuery("user")->condition("status", 1)->count()->execute();
-      $blocked = \\Drupal::entityQuery("user")->condition("status", 0)->count()->execute();
+    const statsCommand = `drush php:eval '
+      $active = \\Drupal::entityQuery("user")->condition("status", 1)->accessCheck(false)->count()->execute();
+      $blocked = \\Drupal::entityQuery("user")->condition("status", 0)->accessCheck(false)->count()->execute();
       echo "Active: $active, Blocked: $blocked\\n";
     '`;
-    const stats = execSync(statsCommand, { encoding: "utf8" });
-    console.log("\n" + stats.trim());
+    const stats = execSync(statsCommand, { encoding: 'utf8' });
+    console.log('\n' + stats.trim());
   }
 } catch (error) {
-  console.error("Error: Failed to get user information");
+  console.error('Error: Failed to get user information');
   console.error(error.message);
   process.exit(1);
 }

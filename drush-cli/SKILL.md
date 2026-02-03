@@ -1,6 +1,10 @@
 ---
 name: drush-cli
-description: Drupal command-line operations via Drush for system inspection, entity management, cache clearing, configuration, database operations, and module/theme management. Use when working with Drupal through Drush CLI for any administrative or development task.
+description:
+  Drupal command-line operations via Drush for system inspection, entity
+  management, cache clearing, configuration, database operations, and
+  module/theme management. Use when working with Drupal through Drush CLI for
+  any administrative or development task.
 ---
 
 # Drush CLI
@@ -92,7 +96,8 @@ All scripts are located in `scripts/` and are executable Node.js scripts:
 
 ### Comprehensive Command Reference
 
-See [references/drush_commands.md](references/drush_commands.md) for complete Drush command coverage organized by category:
+See [references/drush_commands.md](references/drush_commands.md) for complete
+Drush command coverage organized by category:
 
 - System Information
 - Entity Operations (nodes, users, taxonomy)
@@ -108,7 +113,8 @@ See [references/drush_commands.md](references/drush_commands.md) for complete Dr
 
 ### Entity Inspection Patterns
 
-See [references/entity_operations.md](references/entity_operations.md) for advanced entity query patterns:
+See [references/entity_operations.md](references/entity_operations.md) for
+advanced entity query patterns:
 
 - Basic entity queries by type, status, and conditions
 - Complex queries with AND/OR logic
@@ -119,7 +125,8 @@ See [references/entity_operations.md](references/entity_operations.md) for advan
 
 ### Cache Management
 
-See [references/cache_management.md](references/cache_management.md) for cache management strategies:
+See [references/cache_management.md](references/cache_management.md) for cache
+management strategies:
 
 - Cache types and when to clear each
 - Targeted cache clearing for development vs production
@@ -179,8 +186,8 @@ drush php-eval '
 drush config:set system.performance css.preprocess true
 drush config:set system.performance js.preprocess true
 
-# Optimize assets and clear caches
-drush asset:optimize
+# Clear CSS/JS aggregates and caches
+drush css:flush && drush js:flush
 node scripts/drush_cache_clear.cjs all
 ```
 
