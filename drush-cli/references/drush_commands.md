@@ -13,9 +13,6 @@ drush status --format=json
 
 # View PHP information
 drush php-eval 'phpinfo();'
-
-# View Drupal core version
-drush core:status drupal-version
 ```
 
 ## Entity Operations
@@ -24,13 +21,32 @@ drush core:status drupal-version
 
 ```bash
 # List recent nodes
-drush entity:query node --limit=10
+drush php-eval '
+  $nids = \Drupal::entityQuery("node")
+    ->sort("created", "DESC")
+    ->range(0, 10)
+    ->execute();
+  print_r($nids);
+'
 
 # Get node details by ID
-drush entity:view node 1
+drush php-eval '
+  $node = \Drupal\node\Entity\Node::load(1);
+  if ($node) {
+    print "Title: " . $node->getTitle() . "\n";
+    print "Type: " . $node->getType() . "\n";
+    print "Status: " . ($node->isPublished() ? "published" : "unpublished") . "\n";
+  }
+'
 
 # Delete a node
 drush entity:delete node 1
+
+# Delete multiple nodes
+drush entity:delete node 1,2,3
+
+# Delete all nodes of a specific type
+drush entity:delete node --bundle=article
 
 # Create a node programmatically
 drush php-eval '
@@ -61,19 +77,43 @@ drush user:role:add "administrator" newuser
 
 # Cancel user account
 drush user:cancel username --delete-content
+
+# Block a user
+drush user:block username
+
+# Unblock a user
+drush user:unblock username
 ```
 
 ### Taxonomy
 
 ```bash
 # List all taxonomy vocabularies
-drush taxonomy:vocabulary-list
+drush php-eval '
+  $vocabularies = \Drupal\taxonomy\Entity\Vocabulary::loadMultiple();
+  foreach ($vocabularies as $vid => $vocabulary) {
+    print $vid . ": " . $vocabulary->label() . "\n";
+  }
+'
 
 # List terms in a vocabulary
-drush taxonomy:term-list tags
+drush php-eval '
+  $terms = \Drupal::entityTypeManager()->getStorage("taxonomy_term")
+    ->loadTree("tags");
+  foreach ($terms as $term) {
+    print $term->tid . ": " . $term->name . "\n";
+  }
+'
 
 # Create a taxonomy term
-drush taxonomy:term:create tags "New Term"
+drush php-eval '
+  $term = \Drupal\taxonomy\Entity\Term::create([
+    "vid" => "tags",
+    "name" => "New Term",
+  ]);
+  $term->save();
+  print "Created term: " . $term->id() . "\n";
+'
 ```
 
 ## Configuration Management
@@ -102,15 +142,12 @@ drush config:status
 
 ```bash
 # Clear all caches
-drush cache:clear
+drush cache:rebuild
 
 # Clear specific caches
 drush cache:clear render
 drush cache:clear bootstrap
 drush cache:clear dynamic_page_cache
-
-# Rebuild registry
-drush registry-rebuild
 ```
 
 ## Module and Theme Management
@@ -120,16 +157,16 @@ drush registry-rebuild
 drush pm:list --type=module --status=enabled
 
 # Install module
-drush module:install views
+drush pm:install views
 
 # Uninstall module
-drush module:uninstall views
+drush pm:uninstall views
 
-# Enable module
-drush module:enable views
+# Enable module (alias for install)
+drush pm:enable views
 
 # Disable module
-drush module:disable views
+drush pm:uninstall views
 
 # List installed themes
 drush pm:list --type=theme --status=enabled
@@ -185,9 +222,6 @@ drush state:get system.maintenance_mode
 # Run all cron tasks
 drush cron
 
-# Run specific cron handler
-drush cron:run
-
 # View last cron run time
 drush state:get system.cron_last
 ```
@@ -211,17 +245,14 @@ drush watchdog:show --extended --fields=wid,type,timestamp,message > logs.txt
 ## Update Operations
 
 ```bash
-# Check for available updates
-drush pm:security
+# Check for security updates (use composer audit instead)
+composer audit
 
 # Apply database updates
 drush updatedb
 
 # List pending database updates
 drush updatedb:status
-
-# Clear update status
-drush pm:updatestatus
 ```
 
 ## Utilities
@@ -231,7 +262,7 @@ drush pm:updatestatus
 drush php-eval 'print "Hello World\n";'
 
 # Execute a PHP script
-drush php-script myscript.php
+drush php:script myscript.php
 
 # View site URL
 drush site:alias @self
@@ -240,7 +271,7 @@ drush site:alias @self
 drush user:login
 
 # Clear drush cache
-drush cc drush
+drush cc
 
 # View Drush version
 drush --version
@@ -249,12 +280,12 @@ drush --version
 ## Performance
 
 ```bash
-# Generate CSS and JavaScript aggregate files
-drush asset:optimize
-
-# Clear CSS/JS aggregate files
-drush asset:clear
+# Clear render cache to regenerate CSS/JS aggregates
+drush cache:clear render
 
 # Rebuild content access permissions
-drush node:access-rebuild
+drush php-eval '
+  node_access_rebuild();
+  print "Content access permissions rebuilt\n";
+'
 ```

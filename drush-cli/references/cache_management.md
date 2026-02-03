@@ -78,8 +78,7 @@ drush cache:clear dynamic_page_cache
 # Clear page cache for authenticated users
 drush cache:clear page
 
-# Rebuild CSS/JS aggregates
-drush asset:optimize
+# Clear render cache (CSS/JS aggregates are regenerated automatically)
 drush cache:clear render
 ```
 

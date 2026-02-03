@@ -1,6 +1,7 @@
 # Entity Inspection Patterns
 
-This reference covers patterns for inspecting and querying Drupal entities using Drush.
+This reference covers patterns for inspecting and querying Drupal entities using
+Drush.
 
 ## Basic Entity Query Patterns
 
@@ -8,13 +9,29 @@ This reference covers patterns for inspecting and querying Drupal entities using
 
 ```bash
 # Get all nodes of type 'article'
-drush entity:query node --conditions='{"type": "article"}'
+drush php-eval '
+  $nids = \Drupal::entityQuery("node")
+    ->condition("type", "article")
+    ->execute();
+  print_r($nids);
+'
 
 # Get published nodes only
-drush entity:query node --conditions='{"type": "article", "status": 1}'
+drush php-eval '
+  $nids = \Drupal::entityQuery("node")
+    ->condition("type", "article")
+    ->condition("status", 1)
+    ->execute();
+  print_r($nids);
+'
 
 # Get nodes with limit and offset
-drush entity:query node --limit=20 --offset=0
+drush php-eval '
+  $nids = \Drupal::entityQuery("node")
+    ->range(0, 20)
+    ->execute();
+  print_r($nids);
+'
 ```
 
 ### Query Users
@@ -124,13 +141,32 @@ drush php-eval '
 
 ```bash
 # View node by ID
-drush entity:view node 1
+drush php-eval '
+  $node = \Drupal\node\Entity\Node::load(1);
+  if ($node) {
+    print "Title: " . $node->getTitle() . "\n";
+    print "Type: " . $node->getType() . "\n";
+    print "Status: " . ($node->isPublished() ? "published" : "unpublished") . "\n";
+  }
+'
 
 # View user by ID
-drush entity:view user 1
+drush php-eval '
+  $user = \Drupal\user\Entity\User::load(1);
+  if ($user) {
+    print "Username: " . $user->getAccountName() . "\n";
+    print "Email: " . $user->getEmail() . "\n";
+  }
+'
 
 # View taxonomy term by ID
-drush entity:view taxonomy_term 1
+drush php-eval '
+  $term = \Drupal\taxonomy\Entity\Term::load(1);
+  if ($term) {
+    print "Name: " . $term->getName() . "\n";
+    print "Vocabulary: " . $term->getVocabularyId() . "\n";
+  }
+'
 ```
 
 ### Export Entity Data
