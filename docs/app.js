@@ -280,6 +280,17 @@
       + '<div class="mt-6 font-mono text-xs font-medium text-fg-faint">' + post.dateDisplay + "</div>"
       + '<h1 class="mt-2 text-balance text-3xl font-bold leading-[1.15] tracking-[-0.02em] sm:text-4xl">' + post.title + "</h1>"
       + '<article class="md-body mt-8">' + (window.marked ? window.marked.parse(post.body) : "<p>This post needs JavaScript enabled.</p>") + "</article>";
+
+    mount.querySelectorAll(".md-body pre").forEach(function (pre) {
+      pre.classList.add("relative");
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.setAttribute("aria-label", "Copy command");
+      btn.setAttribute("data-copy", pre.textContent.trim());
+      btn.className = "absolute right-2.5 top-2.5 flex size-[26px] cursor-pointer items-center justify-center rounded-sm bg-accent-fill/15 text-foreground transition-colors hover:bg-accent-fill/25 dark:text-accent-fill";
+      pre.appendChild(btn);
+    });
+    paintIcons(mount);
   }
 
   // ---------------------------------------------------------------- boot
