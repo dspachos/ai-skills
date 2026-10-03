@@ -18,6 +18,17 @@
         { "command": "/visual-review dev feature-flags", "note": "Diff two branches and review the result." },
         { "command": "/visual-review", "note": "The agent asks what to review: a PR, a commit, two branches, or your uncommitted changes." }
       ],
+      "lead": {
+        "intro": "A code review you read like a page, not a wall of diff.",
+        "points": [
+          "<strong>Any source:</strong> a GitHub PR, a single commit, two branches, or your uncommitted changes.",
+          "<strong>One finding per screen:</strong> what goes wrong, the code that proves it, and a comment box.",
+          "<strong>Verified first:</strong> the agent checks each finding against the code before you see it.",
+          "<strong>You stay in control:</strong> comment as you go, finish on a final check. Nothing changes and nothing posts until you say so.",
+          "<strong>Your comments drive the next step:</strong> the agent reads them as instructions and fixes what you agreed to."
+        ],
+        "outro": "Type <code>/visual-review</code> in your agent, or just ask for a review."
+      },
       "tagline": "Review a change on a local web page. Comment on each finding, one screen at a time. The comments drive what happens next.",
       "icon": "eye",
       "requires": ["Node 22.18+"]
