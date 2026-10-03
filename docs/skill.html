@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ai-skills — skill</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%23f5c451'/%3E%3Ccircle cx='12' cy='12' r='4' fill='none' stroke='%2314161a' stroke-width='2'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+  <script>
+    (function () {
+      var t = localStorage.getItem("theme");
+      if (t === "dark" || (!t && matchMedia("(prefers-color-scheme: dark)").matches)) {
+        document.documentElement.classList.add("dark");
+      }
+    })();
+  </script>
+  <style type="text/tailwindcss">
+    @custom-variant dark (&:where(.dark, .dark *));
+
+    @theme {
+      --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+      --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --radius-sm: 6px;
+      --radius-md: 11px;
+      --radius-lg: 12px;
+      --radius-xl: 14px;
+      --color-page: #f1f2f5;
+      --color-background: #fbfbfc;
+      --color-foreground: #14161a;
+      --color-card: #ffffff;
+      --color-muted: #f5f6f8;
+      --color-muted-foreground: #14161a9e;
+      --color-line: #14161a1a;
+      --color-line-strong: #14161a24;
+      --color-line-soft: #14161a12;
+      --color-hover-fill: #14161a0f;
+      --color-band: #f1f2f5;
+      --color-fg-body: #14161acc;
+      --color-fg-muted: #14161ab3;
+      --color-fg-subtle: #14161aa3;
+      --color-fg-label: #14161a99;
+      --color-fg-faint: #14161a59;
+      --color-accent-fill: #f5c451;
+      --color-accent-fill-hover: #eab534;
+      --color-accent-wash: #14161a0a;
+      --color-accent-panel: #ecedef;
+      --color-accent-line: #14161a38;
+    }
+
+    .dark {
+      --color-page: #080808;
+      --color-background: #0b0b0b;
+      --color-foreground: #f4f3f1;
+      --color-card: #100f0e;
+      --color-muted: #0d0d0c;
+      --color-muted-foreground: #f4f3f199;
+      --color-line: #ffffff14;
+      --color-line-strong: #ffffff1f;
+      --color-line-soft: #ffffff0f;
+      --color-hover-fill: #ffffff12;
+      --color-band: #0e0e0d;
+      --color-fg-body: #f4f3f1b8;
+      --color-fg-muted: #f4f3f199;
+      --color-fg-subtle: #f4f3f185;
+      --color-fg-label: #f4f3f17a;
+      --color-fg-faint: #f4f3f14d;
+      --color-accent-fill: #f5c451;
+      --color-accent-fill-hover: #ffd873;
+      --color-accent-wash: #f5c45112;
+      --color-accent-panel: #1d1a11;
+      --color-accent-line: #f5c45159;
+    }
+
+    .md-body {
+      color: var(--color-fg-body);
+      font-size: 0.9375rem;
+      line-height: 1.7;
+    }
+    .md-body > :first-child { margin-top: 0; }
+    .md-body h1 { display: none; }
+    .md-body h2 {
+      margin: 3rem 0 0.5rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--color-line-soft);
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+    .md-body h3 {
+      margin: 2rem 0 0.5rem;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: -0.018em;
+    }
+    .md-body p { margin: 0.875rem 0; }
+    .md-body ul { margin: 0.875rem 0; padding-left: 1.5rem; list-style: disc; }
+    .md-body ol { margin: 0.875rem 0; padding-left: 1.5rem; list-style: decimal; }
+    .md-body li { margin: 0.375rem 0; padding-left: 0.25rem; }
+    .md-body li::marker { color: var(--color-fg-faint); }
+    .md-body a {
+      text-decoration: underline;
+      text-decoration-color: var(--color-line-strong);
+      text-underline-offset: 3px;
+    }
+    .md-body a:hover { text-decoration-color: currentColor; }
+    .md-body strong { font-weight: 600; color: var(--color-foreground); }
+    .md-body code {
+      font-family: var(--font-mono);
+      font-size: 0.85em;
+      background: var(--color-muted);
+      border: 1px solid var(--color-line-soft);
+      border-radius: 5px;
+      padding: 0.125rem 0.375rem;
+    }
+    .md-body pre {
+      margin: 1rem 0;
+      padding: 0.875rem 1rem;
+      overflow-x: auto;
+      background: var(--color-muted);
+      border: 1px solid var(--color-line-soft);
+      border-radius: var(--radius-md);
+      font-size: 0.8125rem;
+      line-height: 1.65;
+    }
+    .md-body pre code {
+      background: none;
+      border: 0;
+      padding: 0;
+      font-size: inherit;
+    }
+    .md-body blockquote {
+      margin: 1rem 0;
+      padding-left: 1rem;
+      border-left: 2px solid var(--color-line-strong);
+      color: var(--color-fg-muted);
+    }
+    .md-body blockquote p { margin: 0.5rem 0; }
+    .md-body table {
+      margin: 1rem 0;
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8125rem;
+    }
+    .md-body th {
+      text-align: left;
+      font-weight: 500;
+      background: var(--color-muted);
+      border: 1px solid var(--color-line);
+      padding: 0.5rem 0.75rem;
+    }
+    .md-body td {
+      border: 1px solid var(--color-line);
+      padding: 0.5rem 0.75rem;
+      vertical-align: top;
+    }
+    .md-body hr { margin: 2rem 0; border: 0; border-top: 1px solid var(--color-line-soft); }
+  </style>
+</head>
+<body class="bg-page font-sans text-foreground antialiased">
+  <div class="mx-auto min-h-dvh max-w-3xl border-x border-line-soft bg-background">
+
+    <header class="sticky top-0 z-40 border-b border-line bg-background/85 backdrop-blur">
+      <div class="flex h-[62px] items-center gap-3 px-6">
+        <a href="index.html" class="font-mono text-sm font-medium tracking-tight">dspachos/ai-skills</a>
+        <nav class="ml-auto flex items-center gap-0.5">
+          <a href="index.html#skills" class="rounded-sm px-2.5 py-1.5 text-sm text-fg-muted transition-colors hover:text-foreground">Skills</a>
+          <a href="https://github.com/dspachos/ai-skills" aria-label="GitHub repository" class="flex size-8 items-center justify-center rounded-md text-fg-muted transition-colors hover:bg-hover-fill hover:text-foreground" data-icon="github"></a>
+          <button type="button" aria-label="Toggle dark mode" class="flex size-8 cursor-pointer items-center justify-center rounded-md text-fg-muted transition-colors hover:bg-hover-fill hover:text-foreground" data-theme-toggle></button>
+        </nav>
+      </div>
+    </header>
+
+    <main id="skill-detail" class="px-6 py-14"></main>
+
+    <footer class="border-t border-line bg-band px-6 py-8">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div class="font-mono text-sm text-fg-muted">dspachos/ai-skills · MIT</div>
+        <div class="text-sm text-fg-faint">
+          HTML, vanilla JS and Tailwind. No build step.
+          <a href="https://github.com/dspachos/ai-skills" class="ml-2 text-fg-muted underline decoration-line-strong underline-offset-[3px] transition-colors hover:text-foreground hover:decoration-current">GitHub</a>
+        </div>
+      </div>
+    </footer>
+
+  </div>
+  <script src="skills-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

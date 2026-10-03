@@ -1,0 +1,27 @@
+{
+  "repo": "dspachos/ai-skills",
+  "siteUrl": "https://dspachos.github.io/ai-skills/",
+  "groups": [
+    {
+      "name": "Code review",
+      "description": "Read the change with the code in front of you, and decide before it merges.",
+      "start": "visual-review"
+    }
+  ],
+  "skills": {
+    "visual-review": {
+      "group": "Code review",
+      "tagline": "Review a change on a local web page. Comment on each finding, one screen at a time. The comments drive what happens next.",
+      "icon": "eye",
+      "requires": ["Node 22.18+"]
+    }
+  },
+  "changelog": [
+    {
+      "version": "v1",
+      "date": "Oct 3, 2026",
+      "title": "First release: /visual-review",
+      "description": "The collection opens with one skill. Review a PR, a commit, two branches or your uncommitted changes on a local page, and turn your comments into the next step."
+    }
+  ]
+}

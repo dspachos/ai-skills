@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ai-skills — agent skills, shared as plain files</title>
+  <meta name="description" content="A small collection of agent skills for coding agents. Install what you need, then type a slash command.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%23f5c451'/%3E%3Ccircle cx='12' cy='12' r='4' fill='none' stroke='%2314161a' stroke-width='2'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+  <script>
+    (function () {
+      var t = localStorage.getItem("theme");
+      if (t === "dark" || (!t && matchMedia("(prefers-color-scheme: dark)").matches)) {
+        document.documentElement.classList.add("dark");
+      }
+    })();
+  </script>
+  <style type="text/tailwindcss">
+    @custom-variant dark (&:where(.dark, .dark *));
+
+    @theme {
+      --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+      --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --radius-sm: 6px;
+      --radius-md: 11px;
+      --radius-lg: 12px;
+      --radius-xl: 14px;
+      --color-page: #f1f2f5;
+      --color-background: #fbfbfc;
+      --color-foreground: #14161a;
+      --color-card: #ffffff;
+      --color-muted: #f5f6f8;
+      --color-muted-foreground: #14161a9e;
+      --color-line: #14161a1a;
+      --color-line-strong: #14161a24;
+      --color-line-soft: #14161a12;
+      --color-hover-fill: #14161a0f;
+      --color-band: #f1f2f5;
+      --color-fg-body: #14161acc;
+      --color-fg-muted: #14161ab3;
+      --color-fg-subtle: #14161aa3;
+      --color-fg-label: #14161a99;
+      --color-fg-faint: #14161a59;
+      --color-accent-fill: #f5c451;
+      --color-accent-fill-hover: #eab534;
+      --color-accent-wash: #14161a0a;
+      --color-accent-panel: #ecedef;
+      --color-accent-line: #14161a38;
+    }
+
+    .dark {
+      --color-page: #080808;
+      --color-background: #0b0b0b;
+      --color-foreground: #f4f3f1;
+      --color-card: #100f0e;
+      --color-muted: #0d0d0c;
+      --color-muted-foreground: #f4f3f199;
+      --color-line: #ffffff14;
+      --color-line-strong: #ffffff1f;
+      --color-line-soft: #ffffff0f;
+      --color-hover-fill: #ffffff12;
+      --color-band: #0e0e0d;
+      --color-fg-body: #f4f3f1b8;
+      --color-fg-muted: #f4f3f199;
+      --color-fg-subtle: #f4f3f185;
+      --color-fg-label: #f4f3f17a;
+      --color-fg-faint: #f4f3f14d;
+      --color-accent-fill: #f5c451;
+      --color-accent-fill-hover: #ffd873;
+      --color-accent-wash: #f5c45112;
+      --color-accent-panel: #1d1a11;
+      --color-accent-line: #f5c45159;
+    }
+  </style>
+</head>
+<body class="bg-page font-sans text-foreground antialiased">
+  <div class="mx-auto min-h-dvh max-w-3xl border-x border-line-soft bg-background">
+
+    <header class="sticky top-0 z-40 border-b border-line bg-background/85 backdrop-blur">
+      <div class="flex h-[62px] items-center gap-3 px-6">
+        <a href="index.html" class="font-mono text-sm font-medium tracking-tight">dspachos/ai-skills</a>
+        <nav class="ml-auto flex items-center gap-0.5">
+          <a href="#skills" class="rounded-sm px-2.5 py-1.5 text-sm text-fg-muted transition-colors hover:text-foreground">Skills</a>
+          <a href="#changelog" class="hidden rounded-sm px-2.5 py-1.5 text-sm text-fg-muted transition-colors hover:text-foreground sm:inline-block">Changelog</a>
+          <a href="https://github.com/dspachos/ai-skills" aria-label="GitHub repository" class="flex size-8 items-center justify-center rounded-md text-fg-muted transition-colors hover:bg-hover-fill hover:text-foreground" data-icon="github"></a>
+          <button type="button" aria-label="Toggle dark mode" class="flex size-8 cursor-pointer items-center justify-center rounded-md text-fg-muted transition-colors hover:bg-hover-fill hover:text-foreground" data-theme-toggle></button>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="px-6 pb-14 pt-16">
+        <div class="flex items-center gap-2 font-mono text-xs font-medium text-fg-label">
+          <span class="size-2 rounded-full bg-accent-fill"></span>
+          agent skills · MIT license
+        </div>
+        <h1 class="mt-4 text-balance text-4xl font-bold leading-[1.08] tracking-[-0.02em] sm:text-5xl">
+          Agent skills, shared as plain files.
+        </h1>
+        <p class="mt-4 max-w-[52ch] text-pretty text-base leading-relaxed text-fg-muted">
+          A small collection of skills for coding agents. Each one turns a process
+          you trust into a slash command the agent follows. Install the one you
+          need, and edit it when you disagree.
+        </p>
+        <a id="stars-pill" href="https://github.com/dspachos/ai-skills" class="mt-6 inline-flex items-center gap-2 rounded-md border border-line bg-card px-3 py-1.5 text-sm text-fg-muted transition-colors hover:text-foreground">
+          <span class="text-accent-fill" data-icon="star"></span>
+          <span class="font-mono text-xs font-medium" data-stars>…</span>
+          <span>on GitHub</span>
+        </a>
+      </section>
+
+      <section id="install" class="px-6 pb-14">
+        <div class="rounded-xl border border-accent-line bg-accent-wash p-6 sm:p-8">
+          <div class="font-mono text-xs font-medium text-fg-label">install</div>
+          <h2 class="mt-1.5 text-lg font-bold leading-[1.2] tracking-[-0.02em] sm:text-xl">Install the skills</h2>
+          <p class="mt-2 max-w-[46ch] text-pretty text-sm leading-relaxed text-fg-muted">
+            Pick the skills you use. The installer writes editable files into your
+            project, or symlinks them into your agent's skills folder.
+          </p>
+          <div class="mt-5 flex items-center gap-2 rounded-md border border-line bg-card px-3.5 py-2.5">
+            <code class="min-w-0 flex-1 select-all overflow-x-auto overscroll-x-contain whitespace-nowrap font-mono text-xs font-medium text-foreground sm:text-sm">npx skills add dspachos/ai-skills</code>
+            <button type="button" aria-label="Copy install command" class="flex size-[30px] shrink-0 cursor-pointer items-center justify-center rounded-sm bg-accent-fill/15 text-foreground transition-colors hover:bg-accent-fill/25 dark:text-accent-fill" data-copy="npx skills add dspachos/ai-skills"></button>
+          </div>
+          <p class="mt-3.5 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-xs text-fg-faint">
+            <span>Works with any agent — Claude Code · Cursor · Codex · Copilot · Amp · pi</span>
+            <span class="hidden sm:inline">·</span>
+            <span><span data-skill-count>1</span> skill · MIT</span>
+          </p>
+        </div>
+      </section>
+
+      <section id="skills" class="border-t border-line-soft px-6 py-14">
+        <h2 class="text-lg font-bold leading-[1.2] tracking-[-0.02em] sm:text-xl">Skills</h2>
+        <p class="mt-1.5 max-w-[46ch] text-pretty text-sm leading-relaxed text-fg-muted">
+          Grouped by when you reach for them. The collection starts small; it
+          grows when a process proves itself.
+        </p>
+        <div id="skills-groups" class="mt-2"></div>
+      </section>
+
+      <section id="about" class="border-t border-line-soft px-6 py-6">
+        <div class="grid gap-2 border-b border-line-soft py-7 sm:grid-cols-[180px_minmax(0,1fr)] sm:gap-x-8">
+          <h2 class="text-base font-bold leading-[1.3] tracking-[-0.018em]">What is a skill?</h2>
+          <div class="max-w-[60ch] space-y-3 text-sm leading-relaxed text-fg-muted">
+            <p>A skill is a folder with a <code class="font-mono text-[.85em]">SKILL.md</code> file inside.
+            The frontmatter names the skill and tells your agent when to use it.
+            The body is the process: the steps, the commands, and the judgment
+            you want applied. Type the slash command, and the agent follows it.</p>
+          </div>
+        </div>
+        <div class="grid gap-2 border-b border-line-soft py-7 sm:grid-cols-[180px_minmax(0,1fr)] sm:gap-x-8">
+          <h2 class="text-base font-bold leading-[1.3] tracking-[-0.018em]">Why plain files?</h2>
+          <div class="max-w-[60ch] space-y-3 text-sm leading-relaxed text-fg-muted">
+            <p>Skills are Markdown and scripts you can read. Nothing runs at
+            install time. When you disagree with a step, you edit the file —
+            not a config you cannot see.</p>
+          </div>
+        </div>
+        <div class="grid gap-2 py-7 sm:grid-cols-[180px_minmax(0,1fr)] sm:gap-x-8">
+          <h2 class="text-base font-bold leading-[1.3] tracking-[-0.018em]">Which agents?</h2>
+          <div>
+            <p class="max-w-[60ch] text-sm leading-relaxed text-fg-muted">Skills are an open format, not a platform. Any agent that reads <code class="font-mono text-[.85em]">SKILL.md</code> works.</p>
+            <ul id="agent-chips" class="mt-4 flex flex-wrap gap-1.5">
+              <li class="rounded-sm border border-line bg-card px-2.5 py-1.5 font-mono text-xs text-fg-muted">Claude Code</li>
+              <li class="rounded-sm border border-line bg-card px-2.5 py-1.5 font-mono text-xs text-fg-muted">Cursor</li>
+              <li class="rounded-sm border border-line bg-card px-2.5 py-1.5 font-mono text-xs text-fg-muted">Codex</li>
+              <li class="rounded-sm border border-line bg-card px-2.5 py-1.5 font-mono text-xs text-fg-muted">Copilot</li>
+              <li class="rounded-sm border border-line bg-card px-2.5 py-1.5 font-mono text-xs text-fg-muted">Amp</li>
+              <li class="rounded-sm border border-line bg-card px-2.5 py-1.5 font-mono text-xs text-fg-muted">pi</li>
+              <li class="rounded-sm border border-line bg-card px-2.5 py-1.5 font-mono text-xs text-fg-muted">OpenCode</li>
+              <li class="rounded-sm border border-line bg-card px-2.5 py-1.5 font-mono text-xs text-fg-muted">Gemini CLI</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="changelog" class="border-t border-line-soft px-6 py-14">
+        <h2 class="text-lg font-bold leading-[1.2] tracking-[-0.02em] sm:text-xl">Changelog</h2>
+        <p class="mt-1.5 text-sm leading-relaxed text-fg-muted">What changed recently.</p>
+        <div id="changelog-list"></div>
+      </section>
+
+      <section class="px-6 pb-16">
+        <div class="rounded-xl border border-accent-line bg-accent-wash p-6 sm:p-8">
+          <div class="font-mono text-xs font-medium text-fg-label">install</div>
+          <h2 class="mt-1.5 text-lg font-bold leading-[1.2] tracking-[-0.02em] sm:text-xl">Get them all</h2>
+          <div class="mt-5 flex items-center gap-2 rounded-md border border-line bg-card px-3.5 py-2.5">
+            <code class="min-w-0 flex-1 select-all overflow-x-auto overscroll-x-contain whitespace-nowrap font-mono text-xs font-medium text-foreground sm:text-sm">npx skills add dspachos/ai-skills</code>
+            <button type="button" aria-label="Copy install command" class="flex size-[30px] shrink-0 cursor-pointer items-center justify-center rounded-sm bg-accent-fill/15 text-foreground transition-colors hover:bg-accent-fill/25 dark:text-accent-fill" data-copy="npx skills add dspachos/ai-skills"></button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="border-t border-line bg-band px-6 py-8">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div class="font-mono text-sm text-fg-muted">dspachos/ai-skills · MIT</div>
+        <div class="text-sm text-fg-faint">
+          HTML, vanilla JS and Tailwind. No build step.
+          <a href="https://github.com/dspachos/ai-skills" class="ml-2 text-fg-muted underline decoration-line-strong underline-offset-[3px] transition-colors hover:text-foreground hover:decoration-current">GitHub</a>
+        </div>
+      </div>
+    </footer>
+
+  </div>
+  <script src="skills-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
