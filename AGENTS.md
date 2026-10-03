@@ -25,7 +25,6 @@ site that presents them. Live site: https://dspachos.github.io/ai-skills/
 - Posts are Markdown files in `docs/blog/posts/`, named `YYYY-MM-DD-slug.md`.
 - The frontmatter carries title, date and description. Do not put an H1 in
   the body; the page renders the title.
-  `images/<name>.png`.
 - Run `node scripts/build-site-data.mjs` after every change. It regenerates
   both `docs/skills-data.js` and `docs/blog-data.js`.
 
