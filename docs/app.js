@@ -102,49 +102,6 @@
       });
     });
 
-  // ---------------------------------------------------------------- agents
-
-  function initAgents() {
-    var holder = document.querySelector("[data-agents]");
-    var code = document.querySelector("[data-agent-cmd]");
-    var copy = document.querySelector("[data-agent-copy]");
-    if (!holder || !code || !copy) return;
-
-    var repo = DATA.repo || "dspachos/ai-skills";
-    var agents = [
-      { name: "Claude Code", cmd: "claude plugin marketplace add " + repo + " && claude plugin install ai-skills@dspachos-ai-skills" },
-      { name: "Cursor", cmd: "npx skills add " + repo + " -a cursor" },
-      { name: "Codex", cmd: "npx skills add " + repo + " -a codex" },
-      { name: "Copilot", cmd: "npx skills add " + repo + " -a github-copilot" },
-      { name: "Amp", cmd: "npx skills add " + repo + " -a amp" },
-      { name: "pi", cmd: "npx skills add " + repo + " -a pi" },
-      { name: "OpenCode", cmd: "npx skills add " + repo + " -a opencode" },
-      { name: "Gemini CLI", cmd: "npx skills add " + repo + " -a gemini-cli" }
-    ];
-
-    function chip(a, i) {
-      var active = i === 0;
-      return '<button type="button" aria-pressed="' + active + '" class="cursor-pointer rounded-sm border px-2.5 py-1.5 font-mono text-xs transition-colors ' + (active ? "border-accent-line bg-accent-fill/15 text-foreground" : "border-line bg-card text-fg-muted hover:text-foreground") + '" data-agent="' + i + '">' + a.name + "</button>";
-    }
-
-    function select(i) {
-      code.textContent = agents[i].cmd;
-      copy.setAttribute("data-copy", agents[i].cmd);
-      holder.querySelectorAll("button[data-agent]").forEach(function (b, j) {
-        var active = j === i;
-        b.setAttribute("aria-pressed", String(active));
-        b.className = "cursor-pointer rounded-sm border px-2.5 py-1.5 font-mono text-xs transition-colors " + (active ? "border-accent-line bg-accent-fill/15 text-foreground" : "border-line bg-card text-fg-muted hover:text-foreground");
-      });
-    }
-
-    holder.innerHTML = agents.map(chip).join("");
-    holder.addEventListener("click", function (e) {
-      var b = e.target.closest("button[data-agent]");
-      if (b) select(Number(b.getAttribute("data-agent")));
-    });
-    select(0);
-  }
-
   // ---------------------------------------------------------------- index
 
   function skillRow(skill) {
@@ -295,7 +252,6 @@
 
   paintIcons(document);
   paintTheme();
-  initAgents();
   renderIndex();
   renderChangelog();
   renderDetail();
