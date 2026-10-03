@@ -47,9 +47,10 @@ site that presents them. Live site: https://dspachos.github.io/ai-skills/
   `<style type="text/tailwindcss">` block of each page. Keep the pages
   identical. The palette follows aihero.dev/skills: amber accent
   `#f5c451`, DM Sans, JetBrains Mono, 9px radius.
-- Link pages with root-relative clean URLs, like `/ai-skills/changelog/`
-  and `/ai-skills/skill/?slug=name`. GitHub Pages serves `foo.html` at
-  `/foo/` too; never write the `.html` in a link.
+- Every page is a directory with its own `index.html`: `changelog/`, `skill/`,
+  `blog/`, `blog/post/`. Link pages with root-relative clean URLs, like
+  `/ai-skills/changelog/` and `/ai-skills/skill/?slug=name`. Never write the
+  `.html` in a link.
 - Dark theme is the default. A stored toggle choice wins over the default.
 - Icons are inline SVG path maps (`STROKE`, `FILL`) in `docs/app.js`. An
   icon key from the manifest must exist there.
