@@ -2,7 +2,7 @@
 window.AI_SKILLS = {
   "repo": "dspachos/ai-skills",
   "siteUrl": "https://dspachos.github.io/ai-skills/",
-  "generatedAt": "2026-10-03T09:49:57.906Z",
+  "generatedAt": "2026-10-03T09:55:21.260Z",
   "groups": [
     {
       "name": "Code review",
