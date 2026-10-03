@@ -248,11 +248,47 @@
     paintIcons(mount);
   }
 
+  // ---------------------------------------------------------------- blog
+
+  function renderBlog() {
+    var list = document.getElementById("blog-list");
+    if (!list || !window.BLOG) return;
+    list.innerHTML = window.BLOG.posts.map(function (p) {
+      return '<a href="post.html?slug=' + encodeURIComponent(p.slug) + '" class="group block rounded-sm border-b border-line py-6 transition-colors last:border-b-0 hover:bg-hover-fill focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-line-strong md:-mx-4 md:px-4">'
+        + '<div class="font-mono text-xs font-medium text-fg-faint">' + p.dateDisplay + "</div>"
+        + '<h2 class="mt-1.5 text-balance text-lg font-bold leading-[1.2] tracking-[-0.02em] transition-colors group-hover:text-fg-muted sm:text-xl">' + p.title + "</h2>"
+        + '<p class="mt-1.5 max-w-[60ch] text-sm leading-relaxed text-fg-muted">' + p.description + "</p>"
+        + "</a>";
+    }).join("");
+  }
+
+  function renderPost() {
+    var mount = document.getElementById("post-detail");
+    if (!mount || !window.BLOG) return;
+    var slug = new URLSearchParams(location.search).get("slug");
+    var post = null;
+    for (var i = 0; i < window.BLOG.posts.length; i++) {
+      if (window.BLOG.posts[i].slug === slug) post = window.BLOG.posts[i];
+    }
+    if (!post) {
+      mount.innerHTML = '<p class="text-sm text-fg-muted">Unknown post. <a class="underline underline-offset-[3px]" href="index.html">Back to the blog</a>.</p>';
+      return;
+    }
+    document.title = post.title + " — ai-skills";
+    mount.innerHTML =
+      '<a href="index.html" class="inline-flex items-center gap-1.5 font-mono text-xs text-fg-subtle transition-colors hover:text-foreground">← Blog</a>'
+      + '<div class="mt-6 font-mono text-xs font-medium text-fg-faint">' + post.dateDisplay + "</div>"
+      + '<h1 class="mt-2 text-balance text-3xl font-bold leading-[1.15] tracking-[-0.02em] sm:text-4xl">' + post.title + "</h1>"
+      + '<article class="md-body mt-8">' + (window.marked ? window.marked.parse(post.body) : "<p>This post needs JavaScript enabled.</p>") + "</article>";
+  }
+
   // ---------------------------------------------------------------- boot
 
   paintIcons(document);
   paintTheme();
   renderIndex();
   renderChangelog();
+  renderBlog();
+  renderPost();
   renderDetail();
 })();

@@ -17,8 +17,18 @@ site that presents them. Live site: https://dspachos.github.io/ai-skills/
   icon, requires, examples, lead, diagram.
 - `scripts/build-site-data.mjs` — regenerates `docs/skills-data.js` from
   `skills/` and the manifest.
-- `docs/` — the site: `index.html`, `skill.html`, `changelog.html`,
-  `app.js`, `skills-data.js` (generated), `assets/`.
+- `docs/` — the site: `index.html`, `skill.html`, `changelog.html`, `blog/`,
+  `app.js`, `skills-data.js` and `blog-data.js` (generated), `assets/`.
+
+## Blog
+
+- Posts are Markdown files in `docs/blog/posts/`, named `YYYY-MM-DD-slug.md`.
+- The frontmatter carries title, date and description. Do not put an H1 in
+  the body; the page renders the title.
+- Post images live in `docs/blog/images/` and are referenced as
+  `images/<name>.png`.
+- Run `node scripts/build-site-data.mjs` after every change. It regenerates
+  both `docs/skills-data.js` and `docs/blog-data.js`.
 
 ## Adding a skill
 
@@ -36,8 +46,8 @@ site that presents them. Live site: https://dspachos.github.io/ai-skills/
   framework, no npm install.
 - Never edit `docs/skills-data.js` by hand. It is generated.
 - The design tokens (colors, fonts, radius) live in the
-  `<style type="text/tailwindcss">` block of each page. Keep the three
-  pages identical. The palette follows aihero.dev/skills: amber accent
+  `<style type="text/tailwindcss">` block of each page. Keep the pages
+  identical. The palette follows aihero.dev/skills: amber accent
   `#f5c451`, DM Sans, JetBrains Mono, 9px radius.
 - Dark theme is the default. A stored toggle choice wins over the default.
 - Icons are inline SVG path maps (`STROKE`, `FILL`) in `docs/app.js`. An

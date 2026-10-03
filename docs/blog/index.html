@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ai-skills — skill</title>
+  <title>Blog — ai-skills</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%23f5c451'/%3E%3Ccircle cx='12' cy='12' r='4' fill='none' stroke='%2314161a' stroke-width='2'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -73,9 +73,6 @@
       --color-accent-panel: #1d1a11;
       --color-accent-line: #f5c45159;
     }
-
-    summary::-webkit-details-marker { display: none; }
-    .diagram svg { display: block; width: 100%; height: auto; min-width: 640px; }
   </style>
 </head>
 <body class="bg-page font-sans text-foreground antialiased">
@@ -83,30 +80,36 @@
 
     <header class="sticky top-0 z-40 border-b border-line bg-background/85 backdrop-blur">
       <div class="flex h-[62px] items-center gap-3 px-6">
-        <a href="index.html" class="font-mono text-sm font-medium tracking-tight">dspachos/ai-skills</a>
+        <a href="../index.html" class="font-mono text-sm font-medium tracking-tight">dspachos/ai-skills</a>
         <nav class="ml-auto flex items-center gap-0.5">
-          <a href="index.html#skills" class="rounded-sm px-2.5 py-1.5 text-sm text-fg-muted transition-colors hover:text-foreground">Skills</a>
+          <a href="../index.html#skills" class="rounded-sm px-2.5 py-1.5 text-sm text-fg-muted transition-colors hover:text-foreground">Skills</a>
+          <a href="../changelog.html" class="hidden rounded-sm px-2.5 py-1.5 text-sm text-fg-muted transition-colors hover:text-foreground sm:inline-block">Changelog</a>
+          <a href="index.html" class="hidden rounded-sm px-2.5 py-1.5 text-sm text-fg-muted transition-colors hover:text-foreground sm:inline-block">Blog</a>
           <a href="https://github.com/dspachos/ai-skills" aria-label="GitHub repository" class="flex size-8 items-center justify-center rounded-md text-fg-muted transition-colors hover:bg-hover-fill hover:text-foreground" data-icon="github"></a>
           <button type="button" aria-label="Toggle dark mode" class="flex size-8 cursor-pointer items-center justify-center rounded-md text-fg-muted transition-colors hover:bg-hover-fill hover:text-foreground" data-theme-toggle></button>
         </nav>
       </div>
     </header>
 
-    <main id="skill-detail" class="px-6 py-14"></main>
+    <main class="px-6 py-14">
+      <h1 class="text-balance text-3xl font-bold leading-[1.15] tracking-[-0.02em] sm:text-4xl">Blog</h1>
+      <p class="mt-2 text-sm leading-relaxed text-fg-muted">Notes on agents, skills, and the interfaces between them.</p>
+      <div id="blog-list" class="mt-8"></div>
+    </main>
 
     <footer class="border-t border-line bg-band px-6 py-8">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div class="font-mono text-sm text-fg-muted">dspachos/ai-skills · MIT</div>
         <div class="flex items-center gap-4 text-sm text-fg-faint">
-          <a href="blog/" class="text-fg-muted underline decoration-line-strong underline-offset-[3px] transition-colors hover:text-foreground hover:decoration-current">Blog</a>
-          <a href="changelog.html" class="text-fg-muted underline decoration-line-strong underline-offset-[3px] transition-colors hover:text-foreground hover:decoration-current">Changelog</a>
+          <a href="index.html" class="text-fg-muted underline decoration-line-strong underline-offset-[3px] transition-colors hover:text-foreground hover:decoration-current">Blog</a>
+          <a href="../changelog.html" class="text-fg-muted underline decoration-line-strong underline-offset-[3px] transition-colors hover:text-foreground hover:decoration-current">Changelog</a>
           <a href="https://github.com/dspachos/ai-skills" class="text-fg-muted underline decoration-line-strong underline-offset-[3px] transition-colors hover:text-foreground hover:decoration-current">GitHub</a>
         </div>
       </div>
     </footer>
 
   </div>
-  <script src="skills-data.js"></script>
-  <script src="app.js"></script>
+  <script src="../blog-data.js"></script>
+  <script src="../app.js"></script>
 </body>
 </html>
