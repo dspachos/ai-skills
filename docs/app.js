@@ -12,7 +12,8 @@
     copy: '<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>',
     check: '<path d="M20 6 9 17l-5-5"/>',
     sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>',
-    moon: '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>'
+    moon: '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+    "chevron-right": '<path d="m9 18 6-6-6-6"/>'
   };
   var FILL = {
     star: '<path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/>',
@@ -127,19 +128,20 @@
         + "</div>";
     }).join("");
 
-    var log = document.getElementById("changelog-list");
-    if (log) {
-      log.innerHTML = DATA.changelog.map(function (entry) {
-        return '<div class="border-b border-line-soft py-6 last:border-b-0">'
-          + '<div class="font-mono text-xs font-medium text-fg-faint">' + entry.version + " · " + entry.date + "</div>"
-          + '<h3 class="mt-1 text-lg font-bold leading-[1.2] tracking-[-0.02em]">' + entry.title + "</h3>"
-          + '<p class="mt-1 max-w-[60ch] text-sm leading-relaxed text-fg-muted">' + entry.description + "</p>"
-          + "</div>";
-      }).join("");
-    }
-
     var count = document.querySelector("[data-skill-count]");
     if (count) count.textContent = DATA.skillCount;
+  }
+
+  function renderChangelog() {
+    var log = document.getElementById("changelog-list");
+    if (!log) return;
+    log.innerHTML = DATA.changelog.map(function (entry) {
+      return '<div class="border-b border-line-soft py-6 last:border-b-0">'
+        + '<div class="font-mono text-xs font-medium text-fg-faint">' + entry.version + " · " + entry.date + "</div>"
+        + '<h3 class="mt-1 text-lg font-bold leading-[1.2] tracking-[-0.02em]">' + entry.title + "</h3>"
+        + '<p class="mt-1 max-w-[60ch] text-sm leading-relaxed text-fg-muted">' + entry.description + "</p>"
+        + "</div>";
+    }).join("");
   }
 
   // ---------------------------------------------------------------- detail
@@ -179,6 +181,37 @@
       + '<p class="mt-3 font-mono text-xs text-fg-faint">or <span class="text-fg-muted">npx skills add ' + DATA.repo + "</span> for all skills, or copy <span class=\"text-fg-muted\">skills/" + skill.slug + '/</span> into your agent\u2019s skills folder by hand.</p>'
       + "</div>";
 
+    var diagram = skill.diagramSvg
+      ? '<section class="mt-12">'
+        + '<h2 class="text-base font-bold leading-[1.3] tracking-[-0.018em]">How it works</h2>'
+        + '<div class="mt-4 overflow-x-auto rounded-xl border border-line bg-card p-4 sm:p-6"><div class="diagram">' + skill.diagramSvg + "</div></div>"
+        + "</section>"
+      : "";
+
+    var examples = (skill.examples && skill.examples.length > 0)
+      ? '<section class="mt-10">'
+        + '<h2 class="text-base font-bold leading-[1.3] tracking-[-0.018em]">Examples</h2>'
+        + '<div class="mt-3 border-t border-line-soft">'
+        + skill.examples.map(function (ex) {
+            return '<div class="border-b border-line-soft py-3.5 last:border-b-0">'
+              + '<code class="rounded-sm border border-line bg-muted px-2 py-1 font-mono text-xs font-medium text-foreground sm:text-sm">&rsaquo; ' + ex.command + "</code>"
+              + '<p class="mt-1.5 max-w-[60ch] text-sm leading-relaxed text-fg-muted">' + ex.note + "</p>"
+              + "</div>";
+          }).join("")
+        + "</div>"
+        + "</section>"
+      : "";
+
+    var doc = '<details class="group mt-14 border-t border-line-soft pt-10">'
+      + '<summary class="-mx-2 flex cursor-pointer select-none list-none items-center gap-2.5 rounded-sm px-2 py-1.5 transition-colors hover:bg-hover-fill focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-line-strong">'
+      + '<h2 class="text-lg font-bold leading-[1.2] tracking-[-0.02em] sm:text-xl">The SKILL.md</h2>'
+      + '<span class="text-fg-faint transition-transform duration-300 group-open:rotate-90 motion-reduce:transition-none">' + svg(STROKE["chevron-right"]) + "</span>"
+      + '<span class="ml-auto font-mono text-xs font-medium text-fg-faint">full instructions</span>'
+      + "</summary>"
+      + '<p class="mt-3 text-sm leading-relaxed text-fg-muted">This is the file your agent reads. Install it, edit it, make it yours.</p>'
+      + '<article class="md-body mt-6">' + window.marked.parse(skill.doc) + "</article>"
+      + "</details>";
+
     mount.innerHTML =
       '<a href="index.html#skills" class="inline-flex items-center gap-1.5 font-mono text-xs text-fg-subtle transition-colors hover:text-foreground">← All skills</a>'
       + '<div class="mt-6 flex flex-wrap items-center gap-2">'
@@ -187,10 +220,10 @@
       + "</div>"
       + '<h1 class="mt-4 text-balance text-3xl font-bold leading-[1.15] tracking-[-0.02em] sm:text-4xl">The /' + skill.slug + " Skill</h1>"
       + '<p class="mt-4 max-w-[60ch] text-pretty text-base leading-relaxed text-fg-muted">' + skill.description + "</p>"
+      + diagram
       + install
-      + '<h2 class="mt-14 border-t border-line-soft pt-10 text-lg font-bold leading-[1.2] tracking-[-0.02em] sm:text-xl">The SKILL.md</h2>'
-      + '<p class="mt-1.5 text-sm leading-relaxed text-fg-muted">This is the file your agent reads. Install it, edit it, make it yours.</p>'
-      + '<article class="md-body mt-8">' + window.marked.parse(skill.doc) + "</article>";
+      + examples
+      + doc;
 
     paintIcons(mount);
   }
@@ -200,5 +233,6 @@
   paintIcons(document);
   paintTheme();
   renderIndex();
+  renderChangelog();
   renderDetail();
 })();

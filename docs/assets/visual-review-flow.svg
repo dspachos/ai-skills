@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 406" role="img" aria-label="The visual-review workflow: a change goes to an agent review, the findings open on a local page, you comment on each finding, and the agent acts on your comments. Nothing posts to GitHub until you approve it.">
+  <title>The /visual-review workflow</title>
+  <defs>
+    <style>
+      .vr-box { fill: var(--color-card, #ffffff); stroke: var(--color-line, rgba(20,22,26,.1)); }
+      .vr-note { fill: var(--color-muted, #f5f6f8); stroke: var(--color-line-strong, rgba(20,22,26,.14)); stroke-dasharray: 4 3; }
+      .vr-chip { fill: var(--color-accent-panel, #ecedef); stroke: var(--color-line, rgba(20,22,26,.1)); }
+      .vr-title { fill: var(--color-foreground, #14161a); font: 700 15px 'DM Sans', ui-sans-serif, system-ui, sans-serif; letter-spacing: -0.01em; }
+      .vr-desc { fill: var(--color-fg-muted, rgba(20,22,26,.7)); font: 400 12.5px 'DM Sans', ui-sans-serif, system-ui, sans-serif; }
+      .vr-num { fill: var(--color-fg-faint, rgba(20,22,26,.35)); font: 500 11px 'JetBrains Mono', ui-monospace, Menlo, monospace; letter-spacing: .06em; }
+      .vr-icn { fill: none; stroke: var(--color-foreground, #14161a); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+      .dark .vr-icn { stroke: var(--color-accent-fill, #f5c451); }
+      .vr-arrow { stroke: var(--color-fg-faint, rgba(20,22,26,.35)); stroke-width: 1.5; }
+      .vr-head { fill: var(--color-fg-faint, rgba(20,22,26,.35)); }
+      .vr-mock { fill: var(--color-muted, #f5f6f8); stroke: var(--color-line-soft, rgba(20,22,26,.07)); }
+      .vr-sep { stroke: var(--color-line-soft, rgba(20,22,26,.07)); }
+      .vr-dot { fill: var(--color-fg-faint, rgba(20,22,26,.35)); }
+      .vr-stub { fill: var(--color-line-strong, rgba(20,22,26,.14)); }
+      .vr-pill { fill: var(--color-accent-fill, #f5c451); opacity: .4; }
+      .vr-comment { fill: none; stroke: var(--color-accent-line, rgba(20,22,26,.22)); }
+      .vr-caret { stroke: var(--color-accent-fill, #f5c451); stroke-width: 1.5; stroke-linecap: round; }
+    </style>
+  </defs>
+
+  <!-- arrows -->
+  <line class="vr-arrow" x1="256" y1="120" x2="292" y2="120"/>
+  <polygon class="vr-head" points="292,113.5 304,120 292,126.5"/>
+  <line class="vr-arrow" x1="546" y1="120" x2="582" y2="120"/>
+  <polygon class="vr-head" points="582,113.5 594,120 582,126.5"/>
+  <line class="vr-arrow" x1="730" y1="226" x2="730" y2="248"/>
+  <polygon class="vr-head" points="723.5,246 730,258 736.5,246"/>
+  <line class="vr-arrow" x1="594" y1="326" x2="562" y2="326"/>
+  <polygon class="vr-head" points="560,319.5 548,326 560,332.5"/>
+
+  <!-- 01 the change -->
+  <rect class="vr-box" x="20" y="60" width="230" height="120" rx="12"/>
+  <rect class="vr-chip" x="36" y="76" width="36" height="36" rx="8"/>
+  <g class="vr-icn" transform="translate(44, 84) scale(0.8333)">
+    <line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/>
+  </g>
+  <text class="vr-num" x="234" y="90" text-anchor="end">01</text>
+  <text class="vr-title" x="36" y="136">The change</text>
+  <text class="vr-desc" x="36" y="156">A PR, a commit, two branches,</text>
+  <text class="vr-desc" x="36" y="172">or uncommitted work.</text>
+
+  <!-- 02 agent review -->
+  <rect class="vr-box" x="310" y="60" width="230" height="120" rx="12"/>
+  <rect class="vr-chip" x="326" y="76" width="36" height="36" rx="8"/>
+  <g class="vr-icn" transform="translate(334, 84) scale(0.8333)">
+    <path d="M12 3l1.9 5.8a2 2 0 0 0 1.3 1.3L21 12l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 21l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 12l5.8-1.9a2 2 0 0 0 1.3-1.3L12 3z"/>
+  </g>
+  <text class="vr-num" x="524" y="90" text-anchor="end">02</text>
+  <text class="vr-title" x="326" y="136">Agent review</text>
+  <text class="vr-desc" x="326" y="156">Reads the diff and checks each</text>
+  <text class="vr-desc" x="326" y="172">finding against the code.</text>
+
+  <!-- 03 the page -->
+  <rect class="vr-box" x="600" y="30" width="260" height="190" rx="12"/>
+  <rect class="vr-chip" x="616" y="46" width="36" height="36" rx="8"/>
+  <g class="vr-icn" transform="translate(624, 54) scale(0.8333)">
+    <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/>
+  </g>
+  <text class="vr-num" x="844" y="60" text-anchor="end">03</text>
+  <text class="vr-title" x="616" y="106">The page</text>
+  <text class="vr-desc" x="616" y="126">Verdict first, then one finding</text>
+  <text class="vr-desc" x="616" y="142">per screen, with its code.</text>
+  <rect class="vr-mock" x="616" y="158" width="228" height="44" rx="6"/>
+  <line class="vr-sep" x1="616" y1="170" x2="844" y2="170"/>
+  <circle class="vr-dot" cx="624" cy="164" r="1.8"/>
+  <circle class="vr-dot" cx="632" cy="164" r="1.8"/>
+  <circle class="vr-dot" cx="640" cy="164" r="1.8"/>
+  <rect class="vr-pill" x="626" y="175" width="62" height="9" rx="4.5"/>
+  <circle class="vr-dot" cx="630" cy="191" r="2.5"/>
+  <rect class="vr-stub" x="638" y="188.5" width="96" height="5" rx="2.5"/>
+  <rect class="vr-comment" x="766" y="175" width="68" height="20" rx="5"/>
+  <line class="vr-caret" x1="774" y1="190" x2="774" y2="182"/>
+
+  <!-- 04 you comment -->
+  <rect class="vr-box" x="600" y="266" width="260" height="120" rx="12"/>
+  <rect class="vr-chip" x="616" y="282" width="36" height="36" rx="8"/>
+  <g class="vr-icn" transform="translate(624, 290) scale(0.8333)">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+  </g>
+  <text class="vr-num" x="844" y="296" text-anchor="end">04</text>
+  <text class="vr-title" x="616" y="342">You comment</text>
+  <text class="vr-desc" x="616" y="362">One comment box per finding,</text>
+  <text class="vr-desc" x="616" y="378">autosaved as you type.</text>
+
+  <!-- 05 agent acts -->
+  <rect class="vr-box" x="310" y="266" width="230" height="120" rx="12"/>
+  <rect class="vr-chip" x="326" y="282" width="36" height="36" rx="8"/>
+  <g class="vr-icn" transform="translate(334, 290) scale(0.8333)">
+    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+  </g>
+  <text class="vr-num" x="524" y="296" text-anchor="end">05</text>
+  <text class="vr-title" x="326" y="342">Agent acts</text>
+  <text class="vr-desc" x="326" y="362">Your comments become the</text>
+  <text class="vr-desc" x="326" y="378">instructions for the fix.</text>
+
+  <!-- note: local only -->
+  <rect class="vr-note" x="20" y="266" width="230" height="120" rx="12"/>
+  <rect class="vr-chip" x="36" y="282" width="36" height="36" rx="8"/>
+  <g class="vr-icn" transform="translate(44, 290) scale(0.8333)">
+    <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+  </g>
+  <text class="vr-title" x="36" y="342">Local only</text>
+  <text class="vr-desc" x="36" y="362">Nothing goes to GitHub</text>
+  <text class="vr-desc" x="36" y="378">until you approve it.</text>
+</svg>

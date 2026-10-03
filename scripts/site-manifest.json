@@ -11,6 +11,13 @@
   "skills": {
     "visual-review": {
       "group": "Code review",
+      "diagram": "assets/visual-review-flow.svg",
+      "examples": [
+        { "command": "/visual-review 859", "note": "Review pull request 859. The page opens with a verdict, then one finding per screen." },
+        { "command": "/visual-review 3f2a1c9", "note": "Review one commit against its parent." },
+        { "command": "/visual-review dev feature-flags", "note": "Diff two branches and review the result." },
+        { "command": "/visual-review", "note": "The agent asks what to review: a PR, a commit, two branches, or your uncommitted changes." }
+      ],
       "tagline": "Review a change on a local web page. Comment on each finding, one screen at a time. The comments drive what happens next.",
       "icon": "eye",
       "requires": ["Node 22.18+"]

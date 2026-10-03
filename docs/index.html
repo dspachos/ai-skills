@@ -14,7 +14,7 @@
   <script>
     (function () {
       var t = localStorage.getItem("theme");
-      if (t === "dark" || (!t && matchMedia("(prefers-color-scheme: dark)").matches)) {
+      if (t !== "light") {
         document.documentElement.classList.add("dark");
       }
     })();
@@ -85,7 +85,7 @@
         <a href="index.html" class="font-mono text-sm font-medium tracking-tight">dspachos/ai-skills</a>
         <nav class="ml-auto flex items-center gap-0.5">
           <a href="#skills" class="rounded-sm px-2.5 py-1.5 text-sm text-fg-muted transition-colors hover:text-foreground">Skills</a>
-          <a href="#changelog" class="hidden rounded-sm px-2.5 py-1.5 text-sm text-fg-muted transition-colors hover:text-foreground sm:inline-block">Changelog</a>
+          <a href="changelog.html" class="hidden rounded-sm px-2.5 py-1.5 text-sm text-fg-muted transition-colors hover:text-foreground sm:inline-block">Changelog</a>
           <a href="https://github.com/dspachos/ai-skills" aria-label="GitHub repository" class="flex size-8 items-center justify-center rounded-md text-fg-muted transition-colors hover:bg-hover-fill hover:text-foreground" data-icon="github"></a>
           <button type="button" aria-label="Toggle dark mode" class="flex size-8 cursor-pointer items-center justify-center rounded-md text-fg-muted transition-colors hover:bg-hover-fill hover:text-foreground" data-theme-toggle></button>
         </nav>
@@ -178,12 +178,6 @@
         </div>
       </section>
 
-      <section id="changelog" class="border-t border-line-soft px-6 py-14">
-        <h2 class="text-lg font-bold leading-[1.2] tracking-[-0.02em] sm:text-xl">Changelog</h2>
-        <p class="mt-1.5 text-sm leading-relaxed text-fg-muted">What changed recently.</p>
-        <div id="changelog-list"></div>
-      </section>
-
       <section class="px-6 pb-16">
         <div class="rounded-xl border border-accent-line bg-accent-wash p-6 sm:p-8">
           <div class="font-mono text-xs font-medium text-fg-label">install</div>
@@ -199,7 +193,8 @@
     <footer class="border-t border-line bg-band px-6 py-8">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div class="font-mono text-sm text-fg-muted">dspachos/ai-skills · MIT</div>
-        <div class="text-sm text-fg-faint">
+        <div class="flex items-center gap-4 text-sm text-fg-faint">
+          <a href="changelog.html" class="text-fg-muted underline decoration-line-strong underline-offset-[3px] transition-colors hover:text-foreground hover:decoration-current">Changelog</a>
           <a href="https://github.com/dspachos/ai-skills" class="text-fg-muted underline decoration-line-strong underline-offset-[3px] transition-colors hover:text-foreground hover:decoration-current">GitHub</a>
         </div>
       </div>

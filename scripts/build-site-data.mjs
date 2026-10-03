@@ -41,6 +41,15 @@ for (const entry of readdirSync(skillsDir, { withFileTypes: true })) {
   }
 }
 
+// Embed the workflow diagram, if the manifest names one, so the detail page
+// works from file:// too (no fetch of a separate SVG).
+for (const skill of skills) {
+  if (typeof skill.diagram === "string") {
+    skill.diagramSvg = readFileSync(join(root, "docs", skill.diagram), "utf8").trim();
+    delete skill.diagram;
+  }
+}
+
 const byGroup = new Map(manifest.groups.map((g) => [g.name, []]));
 const other = [];
 for (const skill of skills) {
