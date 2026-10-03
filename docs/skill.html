@@ -9,7 +9,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-  <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
   <script>
     (function () {
       var t = localStorage.getItem("theme");
@@ -74,91 +73,6 @@
       --color-accent-panel: #1d1a11;
       --color-accent-line: #f5c45159;
     }
-
-    .md-body {
-      color: var(--color-fg-body);
-      font-size: 0.9375rem;
-      line-height: 1.7;
-    }
-    .md-body > :first-child { margin-top: 0; }
-    .md-body h1 { display: none; }
-    .md-body h2 {
-      margin: 3rem 0 0.5rem;
-      padding-top: 2rem;
-      border-top: 1px solid var(--color-line-soft);
-      font-size: 1.25rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      line-height: 1.2;
-    }
-    .md-body h3 {
-      margin: 2rem 0 0.5rem;
-      font-size: 1rem;
-      font-weight: 700;
-      letter-spacing: -0.018em;
-    }
-    .md-body p { margin: 0.875rem 0; }
-    .md-body ul { margin: 0.875rem 0; padding-left: 1.5rem; list-style: disc; }
-    .md-body ol { margin: 0.875rem 0; padding-left: 1.5rem; list-style: decimal; }
-    .md-body li { margin: 0.375rem 0; padding-left: 0.25rem; }
-    .md-body li::marker { color: var(--color-fg-faint); }
-    .md-body a {
-      text-decoration: underline;
-      text-decoration-color: var(--color-line-strong);
-      text-underline-offset: 3px;
-    }
-    .md-body a:hover { text-decoration-color: currentColor; }
-    .md-body strong { font-weight: 600; color: var(--color-foreground); }
-    .md-body code {
-      font-family: var(--font-mono);
-      font-size: 0.85em;
-      background: var(--color-muted);
-      border: 1px solid var(--color-line-soft);
-      border-radius: 5px;
-      padding: 0.125rem 0.375rem;
-    }
-    .md-body pre {
-      margin: 1rem 0;
-      padding: 0.875rem 1rem;
-      overflow-x: auto;
-      background: var(--color-muted);
-      border: 1px solid var(--color-line-soft);
-      border-radius: var(--radius-md);
-      font-size: 0.8125rem;
-      line-height: 1.65;
-    }
-    .md-body pre code {
-      background: none;
-      border: 0;
-      padding: 0;
-      font-size: inherit;
-    }
-    .md-body blockquote {
-      margin: 1rem 0;
-      padding-left: 1rem;
-      border-left: 2px solid var(--color-line-strong);
-      color: var(--color-fg-muted);
-    }
-    .md-body blockquote p { margin: 0.5rem 0; }
-    .md-body table {
-      margin: 1rem 0;
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.8125rem;
-    }
-    .md-body th {
-      text-align: left;
-      font-weight: 500;
-      background: var(--color-muted);
-      border: 1px solid var(--color-line);
-      padding: 0.5rem 0.75rem;
-    }
-    .md-body td {
-      border: 1px solid var(--color-line);
-      padding: 0.5rem 0.75rem;
-      vertical-align: top;
-    }
-    .md-body hr { margin: 2rem 0; border: 0; border-top: 1px solid var(--color-line-soft); }
 
     summary::-webkit-details-marker { display: none; }
     .diagram svg { display: block; width: 100%; height: auto; min-width: 640px; }

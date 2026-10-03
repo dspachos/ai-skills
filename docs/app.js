@@ -27,6 +27,10 @@
     return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="none" class="' + (cls || "size-4") + '" aria-hidden="true">' + paths + "</svg>";
   }
 
+  function esc(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
   function paintIcons(root) {
     (root || document).querySelectorAll("[data-icon]").forEach(function (el) {
       var name = el.getAttribute("data-icon");
@@ -181,6 +185,16 @@
       + '<p class="mt-3 font-mono text-xs text-fg-faint">or <span class="text-fg-muted">npx skills add ' + DATA.repo + "</span> for all skills, or copy <span class=\"text-fg-muted\">skills/" + skill.slug + '/</span> into your agent\u2019s skills folder by hand.</p>'
       + "</div>";
 
+    var lead = skill.lead
+      ? '<p class="mt-4 max-w-[60ch] text-pretty text-base leading-relaxed text-fg-muted">' + skill.lead.intro + "</p>"
+        + '<ul class="mt-4 space-y-2.5">'
+        + skill.lead.points.map(function (p) {
+            return '<li class="flex gap-2.5 text-sm leading-relaxed text-fg-muted"><span class="mt-[7px] size-1.5 shrink-0 rounded-full bg-accent-fill"></span><span>' + p + "</span></li>";
+          }).join("")
+        + "</ul>"
+        + (skill.lead.outro ? '<p class="mt-4 text-sm leading-relaxed text-fg-faint">' + skill.lead.outro + "</p>" : "")
+      : '<p class="mt-4 max-w-[60ch] text-pretty text-base leading-relaxed text-fg-muted">' + skill.description + "</p>";
+
     var diagram = skill.diagramSvg
       ? '<section class="mt-12">'
         + '<h2 class="text-base font-bold leading-[1.3] tracking-[-0.018em]">How it works</h2>'
@@ -190,14 +204,20 @@
 
     var examples = (skill.examples && skill.examples.length > 0)
       ? '<section class="mt-10">'
-        + '<h2 class="text-base font-bold leading-[1.3] tracking-[-0.018em]">Examples</h2>'
-        + '<div class="mt-3 border-t border-line-soft">'
+        + '<div class="rounded-xl border border-accent-line bg-accent-wash p-6 sm:p-8">'
+        + '<div class="font-mono text-xs font-medium text-fg-label">examples</div>'
+        + '<div class="mt-4 space-y-3">'
         + skill.examples.map(function (ex) {
-            return '<div class="border-b border-line-soft py-3.5 last:border-b-0">'
-              + '<code class="rounded-sm border border-line bg-muted px-2 py-1 font-mono text-xs font-medium text-foreground sm:text-sm">&rsaquo; ' + ex.command + "</code>"
-              + '<p class="mt-1.5 max-w-[60ch] text-sm leading-relaxed text-fg-muted">' + ex.note + "</p>"
+            return '<div>'
+              + '<div class="flex items-center gap-2 rounded-md border border-line bg-card px-3.5 py-2.5">'
+              + '<span aria-hidden="true" class="shrink-0 font-mono text-xs text-fg-faint">&rsaquo;</span>'
+              + '<code class="min-w-0 flex-1 select-all overflow-x-auto overscroll-x-contain whitespace-nowrap font-mono text-xs font-medium text-foreground sm:text-sm">' + ex.command + "</code>"
+              + '<button type="button" aria-label="Copy example command" class="flex size-[30px] shrink-0 cursor-pointer items-center justify-center rounded-sm bg-accent-fill/15 text-foreground transition-colors hover:bg-accent-fill/25 dark:text-accent-fill" data-copy="' + ex.command.replace(/"/g, "&quot;") + '"></button>'
+              + "</div>"
+              + '<p class="mt-1.5 pl-1 text-sm leading-relaxed text-fg-muted">' + ex.note + "</p>"
               + "</div>";
           }).join("")
+        + "</div>"
         + "</div>"
         + "</section>"
       : "";
@@ -206,10 +226,10 @@
       + '<summary class="-mx-2 flex cursor-pointer select-none list-none items-center gap-2.5 rounded-sm px-2 py-1.5 transition-colors hover:bg-hover-fill focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-line-strong">'
       + '<h2 class="text-lg font-bold leading-[1.2] tracking-[-0.02em] sm:text-xl">The SKILL.md</h2>'
       + '<span class="text-fg-faint transition-transform duration-300 group-open:rotate-90 motion-reduce:transition-none">' + svg(STROKE["chevron-right"]) + "</span>"
-      + '<span class="ml-auto font-mono text-xs font-medium text-fg-faint">full instructions</span>'
+      + '<span class="ml-auto font-mono text-xs font-medium text-fg-faint">view source</span>'
       + "</summary>"
-      + '<p class="mt-3 text-sm leading-relaxed text-fg-muted">This is the file your agent reads. Install it, edit it, make it yours.</p>'
-      + '<article class="md-body mt-6">' + window.marked.parse(skill.doc) + "</article>"
+      + '<p class="mt-3 text-sm leading-relaxed text-fg-muted">The source file your agent reads, exactly as shipped. Copy it, edit it, make it yours.</p>'
+      + '<pre class="mt-6 max-h-[32rem] overflow-auto rounded-md border border-line bg-muted p-3.5 font-mono text-xs leading-relaxed text-fg-body"><code>' + esc(skill.doc) + "</code></pre>"
       + "</details>";
 
     mount.innerHTML =
@@ -219,7 +239,7 @@
       + '<span class="font-mono text-xs text-fg-faint">MIT</span>' + requires
       + "</div>"
       + '<h1 class="mt-4 text-balance text-3xl font-bold leading-[1.15] tracking-[-0.02em] sm:text-4xl">The /' + skill.slug + " Skill</h1>"
-      + '<p class="mt-4 max-w-[60ch] text-pretty text-base leading-relaxed text-fg-muted">' + skill.description + "</p>"
+      + lead
       + diagram
       + install
       + examples
