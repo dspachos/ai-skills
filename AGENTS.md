@@ -11,6 +11,8 @@ site that presents them. Live site: https://dspachos.github.io/ai-skills/
 
 - `skills/<name>/SKILL.md` — the skill exactly as agents install it. Copy
   skills unchanged. Do not reformat or restyle them.
+- `.claude-plugin/` — plugin manifest and marketplace so Claude Code can
+  install the repo with `claude plugin marketplace add`.
 - `scripts/site-manifest.json` — per-skill site metadata: group, tagline,
   icon, requires, examples, lead, diagram.
 - `scripts/build-site-data.mjs` — regenerates `docs/skills-data.js` from

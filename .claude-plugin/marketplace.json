@@ -1,0 +1,14 @@
+{
+  "name": "dspachos-ai-skills",
+  "owner": {
+    "name": "Dimitris Spachos"
+  },
+  "plugins": [
+    {
+      "name": "ai-skills",
+      "source": "./",
+      "description": "Agent skills by Dimitris Spachos: visual-review and more.",
+      "category": "workflows"
+    }
+  ]
+}

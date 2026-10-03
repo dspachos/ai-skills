@@ -29,6 +29,13 @@ Install one skill, globally:
 npx skills add dspachos/ai-skills --skill visual-review -g
 ```
 
+In Claude Code, install the repo as a plugin:
+
+```bash
+claude plugin marketplace add dspachos/ai-skills
+claude plugin install ai-skills@dspachos-ai-skills
+```
+
 Or copy a skill folder by hand into your agent's skills directory, for
 example `~/.agents/skills/visual-review/`.
 
