@@ -108,7 +108,7 @@
     var chip = '<span class="hidden shrink-0 rounded-sm border border-line bg-muted px-2 py-1 font-mono text-xs font-medium text-fg-body sm:inline-block">/' + skill.slug + "</span>";
     var arrow = '<span class="size-4 shrink-0 text-fg-faint transition-all duration-300 group-hover:translate-x-1 group-hover:text-foreground motion-reduce:transform-none motion-reduce:transition-none">' + svg(STROKE["arrow-right"]) + "</span>";
     var thumb = '<span class="flex size-10 shrink-0 items-center justify-center rounded-lg border border-line bg-accent-wash text-foreground dark:bg-accent-panel dark:text-accent-fill">' + svg(STROKE[skill.icon] || STROKE.eye, "size-5") + "</span>";
-    return '<a href="skill.html?slug=' + encodeURIComponent(skill.slug) + '" class="group flex items-center gap-4 rounded-sm border-b border-line py-3.5 transition-colors last:border-b-0 hover:bg-hover-fill focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-line-strong md:-mx-4 md:px-4">'
+    return '<a href="/ai-skills/skill/?slug=' + encodeURIComponent(skill.slug) + '" class="group flex items-center gap-4 rounded-sm border-b border-line py-3.5 transition-colors last:border-b-0 hover:bg-hover-fill focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-line-strong md:-mx-4 md:px-4">'
       + thumb
       + '<span class="flex min-w-0 flex-1 flex-col gap-0.5"><span class="block text-balance text-base font-medium leading-snug">The /' + skill.slug + " Skill</span>"
       + '<span class="mt-0.5 block text-sm leading-relaxed text-fg-muted">' + skill.tagline + "</span></span>"
@@ -122,7 +122,7 @@
     mount.innerHTML = DATA.groups.map(function (group) {
       var start = group.skills.find(function (s) { return s.slug === group.start; }) || group.skills[0];
       var startLink = start
-        ? '<a href="skill.html?slug=' + encodeURIComponent(start.slug) + '" class="mt-2.5 inline-flex items-center gap-1.5 font-mono text-xs text-fg-subtle transition-colors hover:text-foreground">Start with <span class="font-medium">/' + start.slug + "</span> →</a>"
+        ? '<a href="/ai-skills/skill/?slug=' + encodeURIComponent(start.slug) + '" class="mt-2.5 inline-flex items-center gap-1.5 font-mono text-xs text-fg-subtle transition-colors hover:text-foreground">Start with <span class="font-medium">/' + start.slug + "</span> →</a>"
         : "";
       return '<div class="mt-10 first:mt-8">'
         + '<h3 class="text-base font-bold leading-[1.3] tracking-[-0.018em]">' + group.name + "</h3>"
@@ -165,7 +165,7 @@
     var slug = new URLSearchParams(location.search).get("slug");
     var skill = slug && findSkill(slug);
     if (!skill) {
-      mount.innerHTML = '<p class="text-sm text-fg-muted">Unknown skill. <a class="underline underline-offset-[3px]" href="index.html#skills">Back to all skills</a>.</p>';
+      mount.innerHTML = '<p class="text-sm text-fg-muted">Unknown skill. <a class="underline underline-offset-[3px]" href="/ai-skills/#skills">Back to all skills</a>.</p>';
       return;
     }
 
@@ -233,7 +233,7 @@
       + "</details>";
 
     mount.innerHTML =
-      '<a href="index.html#skills" class="inline-flex items-center gap-1.5 font-mono text-xs text-fg-subtle transition-colors hover:text-foreground">← All skills</a>'
+      '<a href="/ai-skills/#skills" class="inline-flex items-center gap-1.5 font-mono text-xs text-fg-subtle transition-colors hover:text-foreground">← All skills</a>'
       + '<div class="mt-6 flex flex-wrap items-center gap-2">'
       + '<span class="rounded-sm border border-line bg-muted px-2 py-1 font-mono text-xs font-medium text-fg-muted">' + skill.groupName + "</span>"
       + '<span class="font-mono text-xs text-fg-faint">MIT</span>' + requires
@@ -254,7 +254,7 @@
     var list = document.getElementById("blog-list");
     if (!list || !window.BLOG) return;
     list.innerHTML = window.BLOG.posts.map(function (p) {
-      return '<a href="post.html?slug=' + encodeURIComponent(p.slug) + '" class="group block rounded-sm border-b border-line py-6 transition-colors last:border-b-0 hover:bg-hover-fill focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-line-strong md:-mx-4 md:px-4">'
+      return '<a href="/ai-skills/blog/post/?slug=' + encodeURIComponent(p.slug) + '" class="group block rounded-sm border-b border-line py-6 transition-colors last:border-b-0 hover:bg-hover-fill focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-line-strong md:-mx-4 md:px-4">'
         + '<div class="font-mono text-xs font-medium text-fg-faint">' + p.dateDisplay + "</div>"
         + '<h2 class="mt-1.5 text-balance text-lg font-bold leading-[1.2] tracking-[-0.02em] transition-colors group-hover:text-fg-muted sm:text-xl">' + p.title + "</h2>"
         + '<p class="mt-1.5 max-w-[60ch] text-sm leading-relaxed text-fg-muted">' + p.description + "</p>"
@@ -271,12 +271,12 @@
       if (window.BLOG.posts[i].slug === slug) post = window.BLOG.posts[i];
     }
     if (!post) {
-      mount.innerHTML = '<p class="text-sm text-fg-muted">Unknown post. <a class="underline underline-offset-[3px]" href="index.html">Back to the blog</a>.</p>';
+      mount.innerHTML = '<p class="text-sm text-fg-muted">Unknown post. <a class="underline underline-offset-[3px]" href="/ai-skills/blog/">Back to the blog</a>.</p>';
       return;
     }
     document.title = post.title + " — ai-skills";
     mount.innerHTML =
-      '<a href="index.html" class="inline-flex items-center gap-1.5 font-mono text-xs text-fg-subtle transition-colors hover:text-foreground">← Blog</a>'
+      '<a href="/ai-skills/blog/" class="inline-flex items-center gap-1.5 font-mono text-xs text-fg-subtle transition-colors hover:text-foreground">← Blog</a>'
       + '<div class="mt-6 font-mono text-xs font-medium text-fg-faint">' + post.dateDisplay + "</div>"
       + '<h1 class="mt-2 text-balance text-3xl font-bold leading-[1.15] tracking-[-0.02em] sm:text-4xl">' + post.title + "</h1>"
       + '<article class="md-body mt-8">' + (window.marked ? window.marked.parse(post.body) : "<p>This post needs JavaScript enabled.</p>") + "</article>";
