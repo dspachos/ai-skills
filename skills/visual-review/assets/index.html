@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Visual Review</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      // Dark mode flips each color scale (50 and 950, 100 and 900, and so on),
+      // so every light class has a dark match and the markup needs no dark: variants.
+      // Values are the Tailwind v3 palette, 50 to 950.
+      const palette = {
+        slate: "f8fafc f1f5f9 e2e8f0 cbd5e1 94a3b8 64748b 475569 334155 1e293b 0f172a 020617",
+        red: "fef2f2 fee2e2 fecaca fca5a5 f87171 ef4444 dc2626 b91c1c 991b1b 7f1d1d 450a0a",
+        amber: "fffbeb fef3c7 fde68a fcd34d fbbf24 f59e0b d97706 b45309 92400e 78350f 451a03",
+        emerald: "ecfdf5 d1fae5 a7f3d0 6ee7b7 34d399 10b981 059669 047857 065f46 064e3b 022c22",
+        rose: "fff1f2 ffe4e6 fecdd3 fda4af fb7185 f43f5e e11d48 be123c 9f1239 881337 4c0519",
+        sky: "f0f9ff e0f2fe bae6fd 7dd3fc 38bdf8 0ea5e9 0284c7 0369a1 075985 0c4a6e 082f49",
+        indigo: "eef2ff e0e7ff c7d2fe a5b4fc 818cf8 6366f1 4f46e5 4338ca 3730a3 312e81 1e1b4b",
+      };
+      const steps = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
+      const rgb = (hex) => [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16)).join(" ");
+      const colors = { white: "rgb(var(--white) / <alpha-value>)" };
+      let light = "--white: 255 255 255;";
+      let dark = `--white: ${rgb("0f172a")};`;
+      for (const [name, list] of Object.entries(palette)) {
+        const hexes = list.split(" ");
+        colors[name] = {};
+        steps.forEach((step, i) => {
+          colors[name][step] = `rgb(var(--${name}-${step}) / <alpha-value>)`;
+          light += `--${name}-${step}: ${rgb(hexes[i])};`;
+          dark += `--${name}-${step}: ${rgb(hexes[10 - i])};`;
+        });
+      }
+      tailwind.config = { theme: { extend: { colors } } };
+      const themeCss = document.createElement("style");
+      themeCss.textContent = `:root { ${light} color-scheme: light; } :root.dark { ${dark} color-scheme: dark; }`;
+      document.head.append(themeCss);
+
+      // "system" follows the OS setting. The choice is saved per browser.
+      const darkQuery = matchMedia("(prefers-color-scheme: dark)");
+      const savedTheme = () => {
+        try {
+          return localStorage.getItem("visual-review-theme") || "system";
+        } catch {
+          return "system";
+        }
+      };
+      const applyTheme = (mode) =>
+        document.documentElement.classList.toggle("dark", mode === "dark" || (mode === "system" && darkQuery.matches));
+      applyTheme(savedTheme());
+      darkQuery.addEventListener("change", () => applyTheme(savedTheme()));
+    </script>
+    <style>
+      pre {
+        tab-size: 2;
+      }
+      summary::-webkit-details-marker {
+        display: none;
+      }
+    </style>
+  </head>
+  <body class="bg-slate-50 text-slate-800 antialiased">
+    <div class="mx-auto max-w-4xl px-4 py-8">
+      <div class="flex items-center justify-between gap-3">
+        <p class="text-xs font-medium uppercase tracking-wider text-slate-500">Local review</p>
+        <button
+          id="theme"
+          class="rounded-md p-1 text-slate-500 ring-1 ring-inset ring-slate-300 hover:bg-slate-100 hover:text-slate-800"
+        ></button>
+      </div>
+      <header class="mb-6 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 id="pr-title" class="mt-1 flex items-center gap-1 text-lg font-semibold"></h1>
+        </div>
+        <div class="text-right">
+          <p id="progress" class="text-sm text-slate-500"></p>
+          <nav id="dots" class="mt-2 flex flex-wrap justify-end gap-1.5"></nav>
+        </div>
+      </header>
+
+      <div
+        id="finished-banner"
+        class="mb-4 hidden rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-900"
+      ></div>
+
+      <main
+        id="card"
+        class="rounded-xl border border-slate-200 bg-white shadow-sm"
+      ></main>
+
+      <footer class="mt-6 flex items-center justify-between">
+        <button
+          id="prev"
+          class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium hover:bg-slate-100 disabled:opacity-40 disabled:hover:bg-white"
+        >
+          ← Previous
+        </button>
+        <p class="hidden text-xs text-slate-400 sm:block">
+          Arrow keys move between issues when the comment box is not focused.
+        </p>
+        <button
+          id="next"
+          class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-40 disabled:hover:bg-slate-900"
+        >
+          Next →
+        </button>
+      </footer>
+    </div>
+
+    <script>
+      const state = {
+        data: null,
+        finishedAt: null,
+        comments: {},
+        index: 0,
+        timer: null,
+        pending: null,
+        finalDraft: "",
+      };
+
+      const esc = (s) =>
+        s.replace(
+          /[&<>"]/g,
+          (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c],
+        );
+
+      // Only `code` spans are supported, which is all the explanations use.
+      const md = (s) =>
+        esc(s).replace(
+          /`([^`]+)`/g,
+          '<code class="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[0.85em] text-slate-800">$1</code>',
+        );
+
+      const severityClass = {
+        blocker: "bg-red-50 text-red-700 ring-red-200",
+        "should fix": "bg-amber-50 text-amber-800 ring-amber-200",
+      };
+      const checkClass = (check) =>
+        check === "verified"
+          ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
+          : check.startsWith("claim does not hold")
+            ? "bg-slate-100 text-slate-600 ring-slate-300 line-through decoration-slate-400"
+            : "bg-sky-50 text-sky-700 ring-sky-200";
+      const badge = (text, cls) =>
+        `<span class="rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ${cls}">${esc(text)}</span>`;
+
+      // Every GitHub link is a small icon, never the text next to it, so a
+      // click on a title or a code block header never leaves the page by accident.
+      const iconLink = (href, cls = "") =>
+        `<a class="${cls} shrink-0 rounded p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-700" target="_blank"
+          href="${esc(href)}" title="Open on GitHub" aria-label="Open on GitHub">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-3.5 w-3.5"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg></a>`;
+
+      // A ref has a web link only when its commit is pushed. Local commits and
+      // working-tree snapshots get no icon.
+      const webIcon = (refKey, file, start, end, cls = "") => {
+        const web = state.data.refs[refKey]?.web;
+        return web ? iconLink(`${web}/${file}#L${start}${end && end !== start ? `-L${end}` : ""}`, cls) : "";
+      };
+
+      function renderSnippet(s) {
+        const lines = s.lines
+          .map(({ n, text }) => {
+            const hl = s.hl.includes(n);
+            return (
+              `<div class="flex ${hl ? "bg-[#fbbf24]/15" : ""}">` +
+              `<span class="w-14 shrink-0 select-none border-r ${hl ? "border-[#fbbf24] text-[#fcd34d]" : "border-[#334155] text-[#64748b]"} pr-3 text-right">${n}</span>` +
+              `<span class="whitespace-pre pl-3">${esc(text) || " "}</span></div>`
+            );
+          })
+          .join("");
+        const label = badge(
+          state.data.refs[s.ref].label,
+          s.ref === "base"
+            ? "bg-slate-100 text-slate-600 ring-slate-300"
+            : "bg-indigo-50 text-indigo-700 ring-indigo-200",
+        );
+        return `
+    <details class="group overflow-hidden rounded-lg border border-slate-200">
+      <summary class="flex cursor-pointer list-none flex-wrap items-center gap-2 bg-slate-50 px-3 py-2 text-xs group-open:border-b group-open:border-slate-200">
+        <span class="text-slate-400 transition-transform group-open:rotate-90">▶</span>
+        ${label}
+        <span class="font-mono text-slate-700">${esc(s.file)}:${s.start}${s.end !== s.start ? `-${s.end}` : ""}</span>
+        ${s.note ? `<span class="text-slate-500">· ${esc(s.note)}</span>` : ""}
+        ${webIcon(s.ref, s.file, s.start, s.end, "ml-auto")}
+      </summary>
+      <pre class="overflow-x-auto bg-[#0f172a] py-2 font-mono text-[12.5px] leading-5 text-[#f1f5f9]">${lines}</pre>
+    </details>`;
+      }
+
+      const verdictStyle = {
+        approve: ["Approve", "border-emerald-200 bg-emerald-50 text-emerald-900"],
+        "request changes": ["Request changes", "border-amber-200 bg-amber-50 text-amber-900"],
+        reject: ["Reject", "border-red-200 bg-red-50 text-red-900"],
+      };
+      const points = (list) =>
+        `<ul class="mt-1.5 space-y-1">${(list ?? [])
+          .map(
+            (s) =>
+              `<li class="flex gap-2 text-sm leading-relaxed"><span class="mt-[0.6em] h-1.5 w-1.5 shrink-0 rounded-full bg-current opacity-50"></span><span>${md(s)}</span></li>`,
+          )
+          .join("")}</ul>`;
+      const section = (title, body) =>
+        `<h3 class="mt-5 text-xs font-semibold uppercase tracking-wider text-slate-500">${title}</h3>${body}`;
+
+      // The first screen: what the change is and the verdict, before any finding.
+      function renderOverview() {
+        const o = state.data.overview ?? {};
+        const { issues } = state.data;
+        const [label, cls] = verdictStyle[o.verdict] ?? [o.verdict ?? "No verdict", "border-slate-200 bg-slate-50 text-slate-800"];
+        const counts = Object.entries(
+          issues.reduce((acc, i) => ({ ...acc, [i.severity]: (acc[i.severity] ?? 0) + 1 }), {}),
+        )
+          .map(([sev, n]) => `${n} ${sev}`)
+          .join(", ");
+        document.getElementById("card").innerHTML = `
+    <div class="p-6">
+      <span class="text-sm font-semibold text-slate-400">Overview</span>
+      <h2 class="mt-3 font-mono text-xl font-semibold">${esc(state.data.title)}</h2>
+      ${o.what ? section("What it is", `<p class="mt-1.5 text-sm leading-relaxed text-slate-700">${md(o.what)}</p>`) : ""}
+      ${o.problem ? section("Problem it solves", `<p class="mt-1.5 text-sm leading-relaxed text-slate-700">${md(o.problem)}</p>`) : ""}
+      ${o.how?.length ? section("How it solves it", `<div class="text-slate-700">${points(o.how)}</div>`) : ""}
+      <div class="mt-6 rounded-lg border px-4 py-3 ${cls}">
+        <h3 class="text-xs font-semibold uppercase tracking-wider opacity-70">Verdict</h3>
+        <p class="mt-1 font-mono text-lg font-semibold">${esc(label)}</p>
+        ${points(o.reasons)}
+      </div>
+    </div>
+    <div class="border-t border-slate-100 p-6">
+      <p class="text-sm text-slate-500">${issues.length} finding(s)${counts ? `: ${counts}` : ""}</p>
+    </div>`;
+        document.getElementById("prev").disabled = true;
+        document.getElementById("next").disabled = false;
+        renderProgress();
+        history.replaceState(null, "", "#overview");
+      }
+
+      function render() {
+        const last = state.data.issues.length - 1;
+        document.getElementById("next").textContent =
+          state.index === last + 1
+            ? state.finishedAt ? "Review finished" : "Finish review"
+            : state.index === last ? "Final check →" : state.index === -1 ? "Review the findings →" : "Next →";
+        if (state.index === -1) return renderOverview();
+        if (state.index === last + 1) return renderFinal();
+        const { issues } = state.data;
+        const issue = issues[state.index];
+        const saved = state.comments[issue.id];
+
+        document.getElementById("card").innerHTML = `
+    <div class="border-b border-slate-100 p-6">
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="text-sm font-semibold text-slate-400">#${issue.id} of ${issues.length}</span>
+        ${badge(issue.severity, severityClass[issue.severity] ?? "bg-slate-100 text-slate-600 ring-slate-300")}
+        ${badge(issue.check, checkClass(issue.check))}
+      </div>
+      <h2 class="mt-3 font-mono text-xl font-semibold">${md(issue.title)}</h2>
+      <div class="mt-1 flex items-center gap-1">
+        <span class="font-mono text-xs text-slate-500">${esc(issue.file)}:${issue.line}</span>
+        ${webIcon("head", issue.file, issue.line, null)}
+      </div>
+      <p class="mt-4 font-mono text-sm font-medium leading-relaxed text-slate-900">${md(issue.summary)}</p>
+      <h3 class="mt-5 text-xs font-semibold uppercase tracking-wider text-slate-500">How it breaks</h3>
+      <ol class="mt-2 space-y-1.5">
+        ${issue.steps
+          .map(
+            (
+              s,
+              i,
+            ) => `<li class="flex gap-3 text-sm leading-relaxed text-slate-700">
+              <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[11px] font-semibold text-slate-500">${i + 1}</span>
+              <span>${md(s)}</span></li>`,
+          )
+          .join("")}
+      </ol>
+      ${issue.context ? `<p class="mt-4 border-l-2 border-slate-200 pl-3 text-sm leading-relaxed text-slate-500">${md(issue.context)}</p>` : ""}
+      ${
+        issue.impact?.length
+          ? `<div class="mt-5 rounded-lg border border-rose-200 bg-rose-50/60 px-4 py-3">
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-rose-700">Impact</h3>
+        <ul class="mt-1.5 space-y-1">${issue.impact
+          .map(
+            (s) =>
+              `<li class="flex gap-2 text-sm leading-relaxed text-slate-800"><span class="mt-[0.6em] h-1.5 w-1.5 shrink-0 rounded-full bg-rose-400"></span><span>${md(s)}</span></li>`,
+          )
+          .join("")}</ul>
+      </div>`
+          : ""
+      }
+      <div class="mt-3 rounded-lg border border-emerald-200 bg-emerald-50/60 px-4 py-3">
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-emerald-700">Suggested fix</h3>
+        <p class="mt-1 text-sm leading-relaxed text-slate-800">${md(issue.fix)}</p>
+      </div>
+    </div>
+    <div class="space-y-4 p-6">${issue.snippets.map(renderSnippet).join("")}</div>
+    <div class="border-t border-slate-100 p-6">
+      <div class="mb-2 flex items-center justify-between">
+        <label for="comment" class="text-sm font-medium">Your comment</label>
+        <span id="save-status" class="text-xs text-slate-400">${saved ? `Saved ${new Date(saved.updatedAt).toLocaleTimeString()}` : "Not saved yet"}</span>
+      </div>
+      <textarea id="comment" rows="6" placeholder="Agree, disagree, change the ask, or skip. Saved automatically."
+        class="w-full rounded-lg border border-slate-300 bg-white p-3 text-sm leading-relaxed focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200 disabled:bg-slate-50 disabled:text-slate-500" ${state.finishedAt ? "disabled" : ""}>${esc(saved?.comment ?? "")}</textarea>
+    </div>`;
+
+        const box = document.getElementById("comment");
+        box.addEventListener("input", () => queueSave(issue.id, box.value));
+        box.addEventListener("blur", flush);
+
+        document.getElementById("prev").disabled = false;
+        document.getElementById("next").disabled = false;
+        renderProgress();
+        history.replaceState(null, "", `#${issue.id}`);
+      }
+
+      // The last screen, after every finding: check the comments, add final
+      // instructions, then finish. It is the only place that can finish.
+      function renderFinal() {
+        const { issues } = state.data;
+        const done = !!state.finishedAt;
+        const [verdict] = verdictStyle[state.data.overview?.verdict] ?? [state.data.overview?.verdict ?? "No verdict"];
+        const missing = issues.filter((i) => !state.comments[i.id]).length;
+        const rows = issues
+          .map((i, idx) => {
+            const c = state.comments[i.id];
+            return `<li><button data-idx="${idx}" class="w-full rounded-lg px-3 py-2 text-left hover:bg-slate-50">
+        <span class="flex flex-wrap items-center gap-2">
+          <span class="text-sm font-semibold text-slate-400">#${i.id}</span>
+          ${badge(i.severity, severityClass[i.severity] ?? "bg-slate-100 text-slate-600 ring-slate-300")}
+          <span class="font-mono text-sm font-medium">${md(i.title)}</span>
+        </span>
+        ${c
+          ? `<span class="mt-1 block whitespace-pre-wrap text-sm text-slate-700">${esc(c.comment)}</span>`
+          : `<span class="mt-1 block text-sm text-amber-700">No comment</span>`}
+      </button></li>`;
+          })
+          .join("");
+        document.getElementById("card").innerHTML = `
+    <div class="border-b border-slate-100 p-6">
+      <span class="text-sm font-semibold text-slate-400">Final check</span>
+      <h2 class="mt-3 font-mono text-xl font-semibold">${done ? "Review finished" : "Check your comments, then finish"}</h2>
+      <p class="mt-2 text-sm text-slate-600">Verdict: <span class="font-mono font-semibold">${esc(verdict)}</span>.
+        ${issues.length - missing} of ${issues.length} finding(s) have a comment. Click a finding to change its comment.</p>
+      ${missing && !done ? `<p class="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">${missing} finding(s) have no comment.</p>` : ""}
+      ${issues.length ? `<ul id="final-list" class="-mx-3 mt-4 space-y-1">${rows}</ul>` : ""}
+    </div>
+    <div class="p-6">
+      <label for="final-prompt" class="block text-sm font-medium">
+        Final instructions for the agent <span class="font-normal text-slate-400">(optional)</span>
+      </label>
+      <textarea id="final-prompt" rows="6" ${done ? "disabled" : ""}
+        placeholder="What should the agent do with your comments? For example: fix the items I agreed with and leave the rest."
+        class="mt-2 w-full rounded-lg border border-slate-300 bg-white p-3 text-sm leading-relaxed focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200 disabled:bg-slate-50 disabled:text-slate-500">${esc(done ? state.finalPrompt : state.finalDraft)}</textarea>
+      <p id="finish-error" class="mt-2 hidden text-sm text-red-600"></p>
+      ${done ? "" : `<p class="mt-2 hidden text-xs text-slate-400 sm:block">⌘/Ctrl + Enter to finish.</p>`}
+    </div>`;
+        document.getElementById("final-list")?.addEventListener("click", (e) => {
+          const btn = e.target.closest("button[data-idx]");
+          if (btn) go(Number(btn.dataset.idx));
+        });
+        const box = document.getElementById("final-prompt");
+        box.addEventListener("input", () => (state.finalDraft = box.value));
+        box.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) confirmFinish();
+        });
+        document.getElementById("prev").disabled = false;
+        document.getElementById("next").disabled = done;
+        renderProgress();
+        history.replaceState(null, "", "#finish");
+      }
+
+      function renderProgress() {
+        const { issues } = state.data;
+        const done = issues.filter((i) => state.comments[i.id]).length;
+        document.getElementById("progress").textContent =
+          `${done} of ${issues.length} commented`;
+        const overviewDot = `<button data-idx="-1" title="Overview"
+      class="flex h-7 items-center justify-center rounded-full bg-white px-2.5 text-xs font-medium text-slate-500 ring-1 ring-inset ring-slate-300
+      ${state.index === -1 ? "outline outline-2 outline-offset-2 outline-indigo-500" : ""}">Overview</button>`;
+        document.getElementById("dots").innerHTML = overviewDot + issues
+          .map((i, idx) => {
+            const has = !!state.comments[i.id];
+            const current = idx === state.index;
+            return `<button data-idx="${idx}" title="#${i.id} ${esc(i.title)}"
+      class="flex h-7 w-7 items-center justify-center rounded-full text-xs font-medium
+      ${has ? "bg-slate-900 text-white" : "bg-white text-slate-500 ring-1 ring-inset ring-slate-300"}
+      ${current ? "outline outline-2 outline-offset-2 outline-indigo-500" : ""}">${i.id}</button>`;
+          })
+          .join("") +
+          `<button data-idx="${issues.length}" title="Final check"
+      class="flex h-7 items-center justify-center rounded-full bg-white px-2.5 text-xs font-medium text-slate-500 ring-1 ring-inset ring-slate-300
+      ${state.index === issues.length ? "outline outline-2 outline-offset-2 outline-indigo-500" : ""}">Finish</button>`;
+      }
+
+      function setStatus(text, cls = "text-slate-400") {
+        const el = document.getElementById("save-status");
+        if (el) {
+          el.textContent = text;
+          el.className = `text-xs ${cls}`;
+        }
+      }
+
+      function queueSave(id, comment) {
+        state.pending = { id, comment };
+        setStatus("Saving…");
+        clearTimeout(state.timer);
+        state.timer = setTimeout(flush, 600);
+      }
+
+      async function flush() {
+        clearTimeout(state.timer);
+        const job = state.pending;
+        if (!job) return;
+        state.pending = null;
+        try {
+          const res = await fetch("/api/comments", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(job),
+            keepalive: true,
+          });
+          if (!res.ok) throw new Error(res.statusText);
+          const { updatedAt } = await res.json();
+          const text = job.comment.trim();
+          if (text) state.comments[job.id] = { comment: text, updatedAt };
+          else delete state.comments[job.id];
+          if (state.data.issues[state.index]?.id === job.id) {
+            setStatus(
+              text
+                ? `Saved ${new Date(updatedAt).toLocaleTimeString()}`
+                : "Empty, removed",
+              "text-emerald-600",
+            );
+          }
+          renderProgress();
+        } catch (e) {
+          state.pending = state.pending ?? job;
+          setStatus(
+            `Save failed: ${e.message}. Is the server running?`,
+            "text-red-600",
+          );
+        }
+      }
+
+      function renderFinished() {
+        const done = !!state.finishedAt;
+        const banner = document.getElementById("finished-banner");
+        banner.classList.toggle("hidden", !done);
+        if (done) {
+          banner.innerHTML = `<p class="font-semibold">Review finished at ${new Date(state.finishedAt).toLocaleString()}.</p>
+            <p class="mt-1">Your comments are saved and locked. The local server has stopped and the agent picks them up from here, so you can switch back to it.</p>
+            ${state.finalPrompt ? `<p class="mt-3 text-xs font-semibold uppercase tracking-wider text-emerald-700">Your final instructions</p><p class="mt-1 whitespace-pre-wrap">${esc(state.finalPrompt)}</p>` : ""}`;
+        }
+      }
+
+      async function confirmFinish() {
+        const button = document.getElementById("next");
+        const error = document.getElementById("finish-error");
+        if (state.index !== state.data.issues.length || button.disabled) return;
+        button.disabled = true;
+        try {
+          await flush();
+          if (state.pending) throw new Error("a comment did not save");
+          const res = await fetch("/api/finish", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ prompt: state.finalDraft }),
+          });
+          if (!res.ok) throw new Error(res.statusText);
+          const data = await res.json();
+          state.finishedAt = data.finishedAt;
+          state.finalPrompt = data.finalPrompt ?? "";
+          renderFinished();
+          render();
+          window.scrollTo({ top: 0 });
+        } catch (e) {
+          error.textContent = `Could not finish the review: ${e.message}. Is the server running?`;
+          error.classList.remove("hidden");
+          button.disabled = false;
+        }
+      }
+
+      async function go(index) {
+        if (
+          index < -1 ||
+          index > state.data.issues.length ||
+          index === state.index
+        )
+          return;
+        await flush();
+        state.index = index;
+        render();
+        window.scrollTo({ top: 0 });
+      }
+
+      // The toggle shows the theme it switches to. Until the first click, the
+      // page follows the OS setting.
+      const themeToggle = document.getElementById("theme");
+      const sun = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"/></svg>`;
+      const moon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg>`;
+      const renderToggle = () => {
+        const isDark = document.documentElement.classList.contains("dark");
+        themeToggle.innerHTML = isDark ? sun : moon;
+        themeToggle.title = themeToggle.ariaLabel = isDark ? "Switch to light theme" : "Switch to dark theme";
+      };
+      themeToggle.onclick = () => {
+        const next = document.documentElement.classList.contains("dark") ? "light" : "dark";
+        try {
+          localStorage.setItem("visual-review-theme", next);
+        } catch {}
+        applyTheme(next);
+        renderToggle();
+      };
+      darkQuery.addEventListener("change", renderToggle);
+      renderToggle();
+
+      document.getElementById("prev").onclick = () => go(state.index - 1);
+      // On the final screen, Next is the Finish button.
+      document.getElementById("next").onclick = () =>
+        state.index === state.data.issues.length ? confirmFinish() : go(state.index + 1);
+      document.getElementById("dots").onclick = (e) => {
+        const btn = e.target.closest("button[data-idx]");
+        if (btn) go(Number(btn.dataset.idx));
+      };
+      document.addEventListener("keydown", (e) => {
+        if (
+          e.target.tagName === "TEXTAREA" ||
+          e.metaKey ||
+          e.ctrlKey ||
+          e.altKey
+        )
+          return;
+        if (e.key === "ArrowLeft") go(state.index - 1);
+        if (e.key === "ArrowRight") go(state.index + 1);
+      });
+      window.addEventListener("beforeunload", (e) => {
+        if (state.pending) {
+          flush();
+          e.preventDefault();
+        }
+      });
+
+      (async () => {
+        const [data, comments] = await Promise.all([
+          fetch("/api/issues").then((r) => r.json()),
+          fetch("/api/comments").then((r) => r.json()),
+        ]);
+        state.data = data;
+        for (const c of comments.items) state.comments[c.id] = c;
+        state.finishedAt = comments.finishedAt ?? null;
+        state.finalPrompt = comments.finalPrompt ?? "";
+        renderFinished();
+        document.getElementById("pr-title").innerHTML =
+          `<span class="font-mono">${esc(data.title)}</span>${data.url ? iconLink(data.url) : ""}`;
+        const fromHash = data.issues.findIndex(
+          (i) => `#${i.id}` === location.hash,
+        );
+        // -1 opens the overview.
+        state.index = location.hash === "#finish" ? data.issues.length : fromHash;
+        render();
+      })();
+    </script>
+  </body>
+</html>
