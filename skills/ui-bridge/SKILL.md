@@ -129,14 +129,33 @@ If the port is busy, the server exits with code 1. Stop the old server with
 with `open http://127.0.0.1:8870/` on macOS or `xdg-open` on Linux.
 
 Tell the user the URL, that values autosave, and that Finish hands the
-answers back. Then wait.
+answers back. Then wait for the process, not for the user to report back.
 
-The server exits when the user finishes, and that exit is the signal to
-continue with Step 4. Start the server as a background process and watch
-for its termination. If your agent notifies you when a background process
-exits, use that notification. If it does not, ask the user to tell you when
-they finish. Either way, confirm that `answers.json` has `finishedAt`
-before you continue.
+Start the server detached, so it survives the command that launched it,
+and record its PID:
+
+```bash
+nohup node <skill-dir>/assets/server.ts <workdir> 8870 > <workdir>/server.log 2>&1 &
+echo $! > <workdir>/server.pid
+```
+
+The process exits when the user finishes. That exit is the only signal you
+need. How you receive it depends on how you run commands:
+
+- If your shell commands can block a turn, wait on the PID and let the
+  wait end your turn. The user fills the page while it runs:
+
+```bash
+while kill -0 "$(cat <workdir>/server.pid)" 2>/dev/null; do sleep 1; done
+```
+
+- If your harness notifies you when a background process exits, for example
+  Claude Code with `run_in_background`, use that notification as the signal.
+- Otherwise poll `answers.json` for `finishedAt` every few seconds.
+
+Do not ask the user to report the finish unless your environment offers
+none of these. Confirm that `answers.json` has `finishedAt`, then continue
+with Step 4.
 
 If the server stops and `answers.json` has no `finishedAt`, it timed out or
 crashed. Start it again. The saved values stay in `answers.json` and the
