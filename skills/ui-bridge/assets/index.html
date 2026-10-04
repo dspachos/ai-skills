@@ -297,6 +297,9 @@
             banner.textContent = "Done. Your answers are with the agent. You can close this tab.";
             banner.classList.remove("hidden");
             banner.scrollIntoView({ behavior: "smooth", block: "center" });
+            // Best effort: works when the tab was opened by a page, blocked when it
+            // came from the terminal. The agent closes it in that case.
+            setTimeout(() => window.close(), 1500);
           })
           .catch(() => {
             const msg = document.getElementById("missing");

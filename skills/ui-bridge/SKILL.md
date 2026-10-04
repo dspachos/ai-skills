@@ -129,14 +129,29 @@ If the port is busy, the server exits with code 1. Stop the old server with
 with `open http://127.0.0.1:8870/` on macOS or `xdg-open` on Linux.
 
 Tell the user the URL, that values autosave, and that Finish hands the
-answers back. Then wait. The server exits when the user finishes. If your
-agent tells you when a background process exits, use that as the signal for
-Step 4. Otherwise ask the user to tell you when they finish.
+answers back. Then wait.
+
+The server exits when the user finishes, and that exit is the signal to
+continue with Step 4. Start the server as a background process and watch
+for its termination. If your agent notifies you when a background process
+exits, use that notification. If it does not, ask the user to tell you when
+they finish. Either way, confirm that `answers.json` has `finishedAt`
+before you continue.
 
 If the server stops and `answers.json` has no `finishedAt`, it timed out or
 crashed. Start it again. The saved values stay in `answers.json` and the
 page reloads them. To reopen a finished form, remove `finishedAt` from
 `answers.json` and start the server again.
+
+The page tries to close its own tab on finish. Browsers block that when the
+tab came from the terminal, so close it yourself. On macOS, after the server
+exits:
+
+```bash
+osascript -e 'tell application "Google Chrome" to (close every tab whose URL starts with "http://127.0.0.1:8870")'
+```
+
+It closes the tab you opened and nothing else. Then continue with Step 4.
 
 ## Step 4: Read answers.json
 
