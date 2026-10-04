@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Form</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      // Dark mode flips each color scale (50 and 950, 100 and 900, and so on),
+      // so every light class has a dark match and the markup needs no dark: variants.
+      const palette = {
+        slate: "f8fafc f1f5f9 e2e8f0 cbd5e1 94a3b8 64748b 475569 334155 1e293b 0f172a 020617",
+        amber: "fffbeb fef3c7 fde68a fcd34d fbbf24 f59e0b d97706 b45309 92400e 78350f 451a03",
+        emerald: "ecfdf5 d1fae5 a7f3d0 6ee7b7 34d399 10b981 059669 047857 065f46 064e3b 022c22",
+        red: "fef2f2 fee2e2 fecaca fca5a5 f87171 ef4444 dc2626 b91c1c 991b1b 7f1d1d 450a0a",
+      };
+      const steps = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
+      const rgb = (hex) => [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16)).join(" ");
+      const colors = { white: "rgb(var(--white) / <alpha-value>)" };
+      let light = "--white: 255 255 255;";
+      let dark = `--white: ${rgb("0f172a")};`;
+      for (const [name, list] of Object.entries(palette)) {
+        const hexes = list.split(" ");
+        colors[name] = {};
+        steps.forEach((step, i) => {
+          colors[name][step] = `rgb(var(--${name}-${step}) / <alpha-value>)`;
+          light += `--${name}-${step}: ${rgb(hexes[i])};`;
+          dark += `--${name}-${step}: ${rgb(hexes[10 - i])};`;
+        });
+      }
+      tailwind.config = { theme: { extend: { colors } } };
+      const themeCss = document.createElement("style");
+      themeCss.textContent = `:root { ${light} color-scheme: light; } :root.dark { ${dark} color-scheme: dark; }`;
+      document.head.append(themeCss);
+
+      // "system" follows the OS setting. The choice is saved per browser.
+      const darkQuery = matchMedia("(prefers-color-scheme: dark)");
+      const savedTheme = () => {
+        try {
+          return localStorage.getItem("ui-bridge-theme") || "system";
+        } catch {
+          return "system";
+        }
+      };
+      const applyTheme = (mode) =>
+        document.documentElement.classList.toggle("dark", mode === "dark" || (mode === "system" && darkQuery.matches));
+      applyTheme(savedTheme());
+      darkQuery.addEventListener("change", () => applyTheme(savedTheme()));
+    </script>
+  </head>
+  <body class="bg-slate-50 text-slate-800 antialiased">
+    <div class="mx-auto max-w-2xl px-4 py-8">
+      <div class="flex items-center justify-between gap-3">
+        <p class="text-xs font-medium uppercase tracking-wider text-slate-500">Local form</p>
+        <div class="flex items-center gap-3">
+          <p id="saved" class="hidden text-xs text-slate-400"></p>
+          <button
+            id="theme"
+            class="rounded-md p-1 text-slate-500 ring-1 ring-inset ring-slate-300 hover:bg-slate-100 hover:text-slate-800"
+          ></button>
+        </div>
+      </div>
+
+      <div
+        id="finished-banner"
+        class="mb-4 hidden rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-900"
+      ></div>
+
+      <header class="mb-6">
+        <h1 id="form-title" class="mt-1 text-lg font-semibold"></h1>
+        <p id="form-description" class="mt-1 hidden text-sm text-slate-500"></p>
+      </header>
+
+      <main id="form" class="space-y-4"></main>
+
+      <section class="mt-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <label for="final-prompt" class="text-sm font-medium">Notes for the agent</label>
+        <p class="mt-0.5 text-xs text-slate-500">Optional. Written after you saw every field, so it can override answers.</p>
+        <textarea
+          id="final-prompt"
+          rows="2"
+          class="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm placeholder:text-slate-400 focus:border-slate-500 focus:outline-none"
+          placeholder="Optional"
+        ></textarea>
+      </section>
+
+      <footer class="mt-6 flex items-center justify-between gap-4">
+        <p id="missing" class="hidden text-sm text-red-600"></p>
+        <button
+          id="finish"
+          class="ml-auto rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+        ></button>
+      </footer>
+    </div>
+
+    <script>
+      const state = { form: null, values: {}, finishedAt: null, timer: null, locked: false };
+
+      const esc = (s) =>
+        s.replace(
+          /[&<>"]/g,
+          (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c],
+        );
+
+      const fieldLabel = (f) => `
+        <span class="text-sm font-medium">${esc(f.label)}${f.required ? '<span class="ml-0.5 text-amber-500">*</span>' : ""}</span>
+        ${f.help ? `<span class="mt-0.5 block text-xs text-slate-500">${esc(f.help)}</span>` : ""}`;
+
+      const inputClass =
+        "mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm placeholder:text-slate-400 focus:border-slate-500 focus:outline-none disabled:bg-slate-100";
+
+      function optionButton(sel, check) {
+        return `rounded-lg border px-3 py-2 text-left text-sm transition-colors ${
+          sel
+            ? "border-slate-900 bg-slate-900 text-white"
+            : "border-slate-300 bg-white hover:bg-slate-100 disabled:hover:bg-white"
+        } flex items-center gap-2 disabled:opacity-60 ${check ? "cursor-default" : "cursor-pointer"}`;
+      }
+
+      // Each editor reads and writes state.values[f.id] and calls onChange.
+      function editors(f, onChange, missing) {
+        const wrap = (inner) =>
+          `<div id="field-${esc(f.id)}" class="${missing ? "rounded-lg ring-2 ring-red-400 ring-offset-2 ring-offset-white p-1" : ""}">${inner}</div>`;
+
+        if (f.type === "text" || f.type === "number") {
+          return wrap(`
+            <label>${fieldLabel(f)}</label>
+            <input type="${f.type === "number" ? "number" : "text"}" data-id="${esc(f.id)}" placeholder="${esc(f.placeholder || "")}" class="${inputClass}">`);
+        }
+        if (f.type === "textarea") {
+          return wrap(`
+            <label>${fieldLabel(f)}</label>
+            <textarea data-id="${esc(f.id)}" rows="3" placeholder="${esc(f.placeholder || "")}" class="${inputClass}"></textarea>`);
+        }
+        if (f.type === "checkbox") {
+          const on = !!state.values[f.id];
+          return wrap(`
+            <div class="flex items-center justify-between gap-4">
+              <label>${fieldLabel(f)}</label>
+              <button type="button" data-toggle="${esc(f.id)}" class="relative h-6 w-11 shrink-0 rounded-full transition-colors ${
+                on ? "bg-emerald-500" : "bg-slate-300"
+              }" aria-pressed="${on}">
+                <span class="absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${on ? "left-[22px]" : "left-0.5"}"></span>
+              </button>
+            </div>`);
+        }
+        // choice and multichoice render the same buttons; multichoice keeps an array.
+        const multi = f.type === "multichoice";
+        return wrap(`
+          <div>${fieldLabel(f)}</div>
+          <div class="mt-2 grid gap-2" data-options="${esc(f.id)}">
+            ${f.options
+              .map(
+                (o) => `
+              <button type="button" data-id="${esc(f.id)}" data-value="${esc(String(o))}" class="${optionButton(
+                multi ? state.values[f.id]?.includes(o) : state.values[f.id] === o,
+                true,
+              )}">
+                <span class="grid size-4 shrink-0 place-items-center border ${multi ? "rounded" : "rounded-full"} ${
+                  multi ? state.values[f.id]?.includes(o) : state.values[f.id] === o
+                    ? "border-white bg-white/20 text-white"
+                    : "border-slate-400 text-transparent"
+                }">
+                  <svg viewBox="0 0 24 24" class="size-3" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>
+                </span>
+                <span>${esc(String(o))}</span>
+              </button>`,
+              )
+              .join("")}
+          </div>`);
+      }
+
+      function render(missingId) {
+        const form = state.form;
+        document.getElementById("form-title").textContent = form.title;
+        if (form.description) {
+          const d = document.getElementById("form-description");
+          d.textContent = form.description;
+          d.classList.remove("hidden");
+        }
+        document.getElementById("finish").textContent = form.submitLabel || "Finish";
+
+        document.getElementById("form").innerHTML = form.sections
+          .map(
+            (s) => `
+          <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 class="font-semibold">${esc(s.title)}</h2>
+            ${s.description ? `<p class="mt-0.5 text-xs text-slate-500">${esc(s.description)}</p>` : ""}
+            <div class="${s.description ? "mt-4" : "mt-3"} space-y-5">
+              ${s.fields.map((f) => editors(f, null, f.id === missingId)).join("")}
+            </div>
+          </section>`,
+          )
+          .join("");
+
+        // Fill every input from state, then wire the change handlers.
+        document.querySelectorAll("[data-id]").forEach((el) => {
+          const id = el.dataset.id;
+          if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
+            const v = state.values[id];
+            el.value = v === undefined || v === null ? "" : v;
+            el.addEventListener("input", () => {
+              state.values[id] = el.value === "" ? "" : el.type === "number" && el.value !== "" ? Number(el.value) : el.value;
+              scheduleSave();
+            });
+            if (state.locked) el.disabled = true;
+          }
+        });
+        document.querySelectorAll("[data-options]").forEach((holder) => {
+          const id = holder.dataset.options;
+          const field = findField(id);
+          holder.querySelectorAll("button").forEach((btn) => {
+            if (state.locked) btn.disabled = true;
+            btn.addEventListener("click", () => {
+              if (state.locked) return;
+              const value = btn.dataset.value;
+              if (field.type === "multichoice") {
+                const list = new Set(state.values[id] || []);
+                list.has(value) ? list.delete(value) : list.add(value);
+                state.values[id] = [...list];
+              } else {
+                state.values[id] = state.values[id] === value ? "" : value;
+              }
+              scheduleSave();
+              render();
+            });
+          });
+        });
+        document.querySelectorAll("[data-toggle]").forEach((btn) => {
+          const id = btn.dataset.toggle;
+          if (state.locked) btn.disabled = true;
+          btn.addEventListener("click", () => {
+            if (state.locked) return;
+            state.values[id] = !state.values[id];
+            scheduleSave();
+            render();
+          });
+        });
+        document.getElementById("final-prompt").disabled = state.locked;
+        document.getElementById("finish").disabled = state.locked;
+      }
+
+      function findField(id) {
+        for (const s of state.form.sections) for (const f of s.fields) if (f.id === id) return f;
+      }
+
+      function scheduleSave() {
+        const saved = document.getElementById("saved");
+        saved.textContent = "Saving…";
+        saved.classList.remove("hidden");
+        clearTimeout(state.timer);
+        state.timer = setTimeout(() => {
+          fetch("/api/values", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ values: state.values }),
+          })
+            .then(() => {
+              saved.textContent = "Saved";
+              setTimeout(() => saved.classList.add("hidden"), 1500);
+            })
+            .catch(() => (saved.textContent = "Save failed"));
+        }, 500);
+      }
+
+      function missingRequired() {
+        for (const s of state.form.sections) {
+          for (const f of s.fields) {
+            if (!f.required) continue;
+            const v = state.values[f.id];
+            if (v === undefined || v === "" || (Array.isArray(v) && v.length === 0)) return f;
+          }
+        }
+        return null;
+      }
+
+      document.getElementById("finish").addEventListener("click", () => {
+        const missing = missingRequired();
+        if (missing) {
+          const msg = document.getElementById("missing");
+          msg.textContent = `"${missing.label}" is required.`;
+          msg.classList.remove("hidden");
+          render(missing.id);
+          return;
+        }
+        fetch("/api/finish", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ values: state.values, finalPrompt: document.getElementById("final-prompt").value }),
+        })
+          .then((r) => r.json())
+          .then((d) => {
+            state.locked = true;
+            state.finishedAt = d.finishedAt;
+            render();
+            const banner = document.getElementById("finished-banner");
+            banner.textContent = "Done. Your answers are with the agent. You can close this tab.";
+            banner.classList.remove("hidden");
+            banner.scrollIntoView({ behavior: "smooth", block: "center" });
+          })
+          .catch(() => {
+            const msg = document.getElementById("missing");
+            msg.textContent = "Could not reach the server. Try again.";
+            msg.classList.remove("hidden");
+          });
+      });
+
+      // Theme toggle: cycles light, dark, back to system.
+      const themeButton = document.getElementById("theme");
+      const paintThemeButton = () => {
+        const mode = savedTheme();
+        themeButton.innerHTML =
+          mode === "dark"
+            ? '<svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>'
+            : '<svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>';
+      };
+      paintThemeButton();
+      themeButton.addEventListener("click", () => {
+        const next = savedTheme() === "dark" ? "light" : "dark";
+        localStorage.setItem("ui-bridge-theme", next);
+        applyTheme(next);
+        paintThemeButton();
+      });
+
+      // Boot: load the form, then any saved answers, then render once.
+      Promise.all([fetch("/api/form").then((r) => r.json()), fetch("/api/answers").then((r) => r.json())])
+        .then(([form, answers]) => {
+          state.form = form;
+          state.values = answers.values || {};
+          state.finishedAt = answers.finishedAt || null;
+          state.locked = !!state.finishedAt;
+          for (const s of form.sections)
+            for (const f of s.fields)
+              if (state.values[f.id] === undefined && f.default !== undefined) state.values[f.id] = f.default;
+          render();
+          if (state.finishedAt) {
+            const banner = document.getElementById("finished-banner");
+            banner.textContent = "This form was already finished. The agent has your answers.";
+            banner.classList.remove("hidden");
+          }
+        })
+        .catch((e) => {
+          document.getElementById("form").innerHTML =
+            `<p class="text-sm text-red-600">Could not load the form: ${esc(String(e))}</p>`;
+        });
+    </script>
+  </body>
+</html>
