@@ -6,9 +6,34 @@
       "name": "Code review",
       "description": "Read the change with the code in front of you, and decide before it merges.",
       "start": "visual-review"
+    },
+    {
+      "name": "Building blocks",
+      "description": "Generic pieces that other skills build on.",
+      "start": "ui-bridge"
     }
   ],
   "skills": {
+    "ui-bridge": {
+      "group": "Building blocks",
+      "tagline": "Give any skill a local form. The agent writes the questions as JSON, you answer in the browser, the answers come back as JSON.",
+      "icon": "clipboard",
+      "requires": ["Node 22.18+"],
+      "examples": [
+        { "command": "draft the migration plan, then ask me the open questions in a form", "note": "The agent turns its questions into a form and opens the page." },
+        { "command": "collect the config values from me before you set up the service", "note": "Typed fields with defaults. Your values drive the setup." },
+        { "command": "/ui-bridge", "note": "Open a form for the questions you already have." }
+      ],
+      "lead": {
+        "intro": "Any skill can ask structured questions with a real form, for free.",
+        "points": [
+          "<strong>The agent writes the form:</strong> sections, fields, types and defaults, as one JSON file.",
+          "<strong>You fill a page:</strong> text, choices, checkboxes and numbers, autosaved as you type.",
+          "<strong>Finish hands control back:</strong> your values and a final note land in answers.json, and the agent continues.",
+          "<strong>No UI code:</strong> the page and server ship with the skill. A new form is a new JSON file."
+        ]
+      }
+    },
     "visual-review": {
       "group": "Code review",
       "diagram": "assets/visual-review-flow.svg",
@@ -35,6 +60,12 @@
     }
   },
   "changelog": [
+    {
+      "version": "v1.1",
+      "date": "Oct 4, 2026",
+      "title": "ui-bridge: forms for any skill",
+      "description": "A new skill turns agent questions into a local form page. The agent writes form.json, you fill the page, and answers.json drives the next step. No UI code."
+    },
     {
       "version": "v1",
       "date": "Oct 3, 2026",
