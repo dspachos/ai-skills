@@ -33,9 +33,12 @@ The review compares two refs: `base` (the code before) and `head` (the code
 after). Pin both to full SHAs, so the snippets do not move when someone pushes
 or edits a file. If the user did not say which source to review, ask.
 
-Make a temporary work folder, for example `visual-review-<slug>/` in your
-session scratchpad, or one from `mktemp -d`. Do not put it in the repo. Run the
-commands below in the repo.
+Make a new work folder that only this review uses: `visual-review-<slug>/` in
+a scratchpad that belongs to your session, or `mktemp -d -t visual-review`.
+Never use a fixed path such as `/tmp/visual-review`. Two sessions on the same
+folder overwrite each other's comments. Do not put the folder in the repo.
+Keep its path, because Step 7 reads `comments.json` from it. Run the commands
+below in the repo.
 
 | Source | `base` | `head` | Labels (base, head) |
 |---|---|---|---|
@@ -211,15 +214,27 @@ correct.
 ## Step 6: Start the server and open the page
 
 Start the server as a background process, so that it keeps running while the
-user reviews. The default port is 8860:
+user reviews:
 
 ```bash
-node <skill-dir>/assets/server.ts <workdir> 8860
+node <skill-dir>/assets/server.ts <workdir>
 ```
 
-If the port is busy, the server exits with code 1. Stop the old server with
-`lsof -ti tcp:8860 | xargs kill`, or use a different port. Then open the page
-with `open http://127.0.0.1:8860/` on macOS or `xdg-open` on Linux.
+The server uses the first free port from 8860 to 8869, and writes its URL to
+`<workdir>/url`. Do not stop a process that holds one of these ports. It can
+be an open review from another session.
+
+Wait for the URL, then open the page:
+
+```bash
+for i in $(seq 50); do [ -s <workdir>/url ] && break; sleep 0.2; done
+open "$(cat <workdir>/url)"
+```
+
+Use `xdg-open` in place of `open` on Linux. If `<workdir>/url` does not appear,
+the server did not start. Its output names the problem, for example all ten
+ports busy, or a review that already runs in this folder. In the second case,
+make a new work folder. Do not stop the other server.
 
 Tell the user the URL, where `comments.json` is, and that "Finish review" on
 the last screen hands the comments back to you. Then wait. Do not act on

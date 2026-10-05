@@ -3,9 +3,11 @@
 // Usage: node server.ts <workdir> [port]   serve the page until the user presses Finish
 //        node server.ts <workdir> --check  print every highlighted line, then exit
 //
-// <workdir> holds issues.json (input). The server writes comments.json there.
+// <workdir> holds issues.json (input). The server writes comments.json there, and
+// writes its URL to <workdir>/url while it runs. The port is the first free one
+// from [port] (default 8860) up to 9 more.
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { join, resolve } from "node:path";
 
@@ -29,6 +31,7 @@ if (!workdirArg) {
 }
 const WORKDIR = resolve(workdirArg);
 const COMMENTS = join(WORKDIR, "comments.json");
+const URL_FILE = join(WORKDIR, "url");
 const PAGE = join(import.meta.dirname, "index.html");
 
 const readReview = (): Review => JSON.parse(readFileSync(join(WORKDIR, "issues.json"), "utf8"));
@@ -122,6 +125,7 @@ function finish(body: { prompt?: string }, res: ServerResponse) {
   }
   send(res, 200, { ok: true, finishedAt: data.finishedAt, finalPrompt: data.finalPrompt ?? "" }, () => {
     console.log(`Review finished. Comments: ${COMMENTS}`);
+    rmSync(URL_FILE, { force: true });
     process.exit(0);
   });
 }
@@ -146,7 +150,23 @@ if (mode === "--check") {
   process.exit(0);
 }
 
-const PORT = Number(mode);
+// Two servers on one folder would overwrite each other's comments, so refuse to
+// start when a live server already serves this folder. A URL file whose server is
+// gone, or whose port now serves another folder, is old and gets replaced.
+if (existsSync(URL_FILE)) {
+  const oldUrl = readFileSync(URL_FILE, "utf8").trim();
+  const owner = await fetch(`${oldUrl}api/workdir`, { signal: AbortSignal.timeout(1000) })
+    .then((r) => r.json())
+    .catch(() => null);
+  if (owner?.workdir === WORKDIR) {
+    console.error(`A review already runs in this folder: ${oldUrl}`);
+    process.exit(1);
+  }
+}
+rmSync(URL_FILE, { force: true });
+
+const FIRST_PORT = Number(mode);
+let port = FIRST_PORT;
 
 const server = createServer(async (req, res) => {
   try {
@@ -158,6 +178,7 @@ const server = createServer(async (req, res) => {
     // Read on each request, so a change to issues.json needs only a page reload.
     if (route === "GET /api/issues") return send(res, 200, loadIssues());
     if (route === "GET /api/comments") return send(res, 200, readComments());
+    if (route === "GET /api/workdir") return send(res, 200, { workdir: WORKDIR });
     if (route === "POST /api/comments") return saveComment(await readBody(req), res);
     if (route === "POST /api/finish") return finish(await readBody(req), res);
     send(res, 404, { error: "not found" });
@@ -166,10 +187,19 @@ const server = createServer(async (req, res) => {
   }
 });
 
-server.on("error", (e) => {
-  console.error(`Cannot listen on port ${PORT}: ${e.message}`);
+// A busy port can be another open review, so move to the next port and never
+// stop the process that holds it.
+server.on("error", (e: NodeJS.ErrnoException) => {
+  if (e.code === "EADDRINUSE" && port < FIRST_PORT + 9) {
+    port++;
+    return server.listen(port, "127.0.0.1");
+  }
+  console.error(`Cannot listen on ports ${FIRST_PORT}-${port}: ${e.message}`);
   process.exit(1);
 });
-server.listen(PORT, "127.0.0.1", () => {
-  console.log(`Visual review: http://127.0.0.1:${PORT}  comments: ${COMMENTS}`);
+server.on("listening", () => {
+  const url = `http://127.0.0.1:${port}/`;
+  writeFileSync(URL_FILE, `${url}\n`);
+  console.log(`Visual review: ${url}  comments: ${COMMENTS}`);
 });
+server.listen(port, "127.0.0.1");
