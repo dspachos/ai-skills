@@ -3,7 +3,12 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f8fafc" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#020617" />
     <title>Form</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       // Dark mode flips each color scale (50 and 950, 100 and 900, and so on),
@@ -28,7 +33,14 @@
           dark += `--${name}-${step}: ${rgb(hexes[10 - i])};`;
         });
       }
-      tailwind.config = { theme: { extend: { colors } } };
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors,
+            fontFamily: { sans: ['"DM Sans"', "ui-sans-serif", "system-ui", "sans-serif"] },
+          },
+        },
+      };
       const themeCss = document.createElement("style");
       themeCss.textContent = `:root { ${light} color-scheme: light; } :root.dark { ${dark} color-scheme: dark; }`;
       document.head.append(themeCss);
@@ -48,15 +60,16 @@
       darkQuery.addEventListener("change", () => applyTheme(savedTheme()));
     </script>
   </head>
-  <body class="bg-slate-50 text-slate-800 antialiased">
-    <div class="mx-auto max-w-2xl px-4 py-8">
+  <body class="bg-slate-50 font-sans text-slate-800 antialiased">
+    <div class="mx-auto max-w-2xl px-4 py-8 pb-16">
       <div class="flex items-center justify-between gap-3">
         <p class="text-xs font-medium uppercase tracking-wider text-slate-500">Local form</p>
         <div class="flex items-center gap-3">
           <p id="saved" class="hidden text-xs text-slate-400"></p>
           <button
             id="theme"
-            class="rounded-md p-1 text-slate-500 ring-1 ring-inset ring-slate-300 hover:bg-slate-100 hover:text-slate-800"
+            aria-label="Toggle theme"
+            class="grid size-9 place-items-center rounded-lg text-slate-500 ring-1 ring-inset ring-slate-300 hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60"
           ></button>
         </div>
       </div>
@@ -67,28 +80,28 @@
       ></div>
 
       <header class="mb-6">
-        <h1 id="form-title" class="mt-1 text-lg font-semibold"></h1>
+        <h1 id="form-title" class="mt-1 text-xl font-semibold tracking-tight"></h1>
         <p id="form-description" class="mt-1 hidden text-sm text-slate-500"></p>
       </header>
 
-      <main id="form" class="space-y-4"></main>
+      <main id="form" class="space-y-5"></main>
 
-      <section class="mt-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <section class="mt-5 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
         <label for="final-prompt" class="text-sm font-medium">Notes for the agent</label>
         <p class="mt-0.5 text-xs text-slate-500">Optional. Written after you saw every field, so it can override answers.</p>
         <textarea
           id="final-prompt"
           rows="2"
-          class="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm placeholder:text-slate-400 focus:border-slate-500 focus:outline-none"
+          class="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-base placeholder:text-slate-400 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/30 disabled:bg-slate-100"
           placeholder="Optional"
         ></textarea>
       </section>
 
       <footer class="mt-6 flex items-center justify-between gap-4">
-        <p id="missing" class="hidden text-sm text-red-600"></p>
+        <p id="missing" class="hidden text-sm font-medium text-red-600"></p>
         <button
           id="finish"
-          class="ml-auto rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+          class="ml-auto rounded-lg bg-[#f5c451] px-6 py-2.5 text-sm font-semibold text-[#0f172a] shadow-sm transition-colors hover:bg-[#eab93b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 disabled:opacity-50"
         ></button>
       </footer>
     </div>
@@ -106,60 +119,62 @@
         <span class="text-sm font-medium">${esc(f.label)}${f.required ? '<span class="ml-0.5 text-amber-500">*</span>' : ""}</span>
         ${f.help ? `<span class="mt-0.5 block text-xs text-slate-500">${esc(f.help)}</span>` : ""}`;
 
+      // 16px inputs: below that, iOS Safari zooms the page on focus.
       const inputClass =
-        "mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm placeholder:text-slate-400 focus:border-slate-500 focus:outline-none disabled:bg-slate-100";
+        "mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-base placeholder:text-slate-400 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/30 disabled:bg-slate-100";
 
-      function optionButton(sel, check) {
-        return `rounded-lg border px-3 py-2 text-left text-sm transition-colors ${
+      function optionButton(sel) {
+        return `rounded-lg border px-3 py-2.5 text-left text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/60 ${
           sel
-            ? "border-slate-900 bg-slate-900 text-white"
-            : "border-slate-300 bg-white hover:bg-slate-100 disabled:hover:bg-white"
-        } flex items-center gap-2 disabled:opacity-60 ${check ? "cursor-default" : "cursor-pointer"}`;
+            ? "border-amber-500 bg-amber-100 text-slate-900"
+            : "border-slate-300 bg-white text-slate-800 hover:border-slate-400 hover:bg-slate-50 disabled:hover:bg-white"
+        } flex cursor-default items-center gap-2.5 disabled:opacity-60`;
       }
 
       // Each editor reads and writes state.values[f.id] and calls onChange.
       function editors(f, onChange, missing) {
         const wrap = (inner) =>
-          `<div id="field-${esc(f.id)}" class="${missing ? "rounded-lg ring-2 ring-red-400 ring-offset-2 ring-offset-white p-1" : ""}">${inner}</div>`;
+          `<div id="field-${esc(f.id)}" class="${missing ? "rounded-lg p-1 ring-2 ring-red-400 ring-offset-2 ring-offset-white" : ""}">${inner}</div>`;
 
+        // The input sits inside the label, so a tap on the label focuses it.
         if (f.type === "text" || f.type === "number") {
           return wrap(`
-            <label>${fieldLabel(f)}</label>
-            <input type="${f.type === "number" ? "number" : "text"}" data-id="${esc(f.id)}" placeholder="${esc(f.placeholder || "")}" class="${inputClass}">`);
+            <label class="block">
+              ${fieldLabel(f)}
+              <input type="${f.type === "number" ? "number" : "text"}" data-id="${esc(f.id)}" autocomplete="off" placeholder="${esc(f.placeholder || "")}" class="${inputClass}">
+            </label>`);
         }
         if (f.type === "textarea") {
           return wrap(`
-            <label>${fieldLabel(f)}</label>
-            <textarea data-id="${esc(f.id)}" rows="3" placeholder="${esc(f.placeholder || "")}" class="${inputClass}"></textarea>`);
+            <label class="block">
+              ${fieldLabel(f)}
+              <textarea data-id="${esc(f.id)}" rows="3" placeholder="${esc(f.placeholder || "")}" class="${inputClass}"></textarea>
+            </label>`);
         }
         if (f.type === "checkbox") {
           const on = !!state.values[f.id];
           return wrap(`
             <div class="flex items-center justify-between gap-4">
-              <label>${fieldLabel(f)}</label>
-              <button type="button" data-toggle="${esc(f.id)}" class="relative h-6 w-11 shrink-0 rounded-full transition-colors ${
-                on ? "bg-emerald-500" : "bg-slate-300"
-              }" aria-pressed="${on}">
-                <span class="absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${on ? "left-[22px]" : "left-0.5"}"></span>
+              <label for="toggle-${esc(f.id)}">${fieldLabel(f)}</label>
+              <button type="button" id="toggle-${esc(f.id)}" data-toggle="${esc(f.id)}" aria-pressed="${on}" class="relative h-7 w-12 shrink-0 rounded-full transition-colors ${
+                on ? "bg-amber-500" : "bg-slate-300"
+              }">
+                <span class="absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-all ${on ? "left-[22px]" : "left-0.5"}"></span>
               </button>
             </div>`);
         }
         // choice and multichoice render the same buttons; multichoice keeps an array.
         const multi = f.type === "multichoice";
+        const picked = (o) => (multi ? state.values[f.id]?.includes(o) : state.values[f.id] === o);
         return wrap(`
           <div>${fieldLabel(f)}</div>
           <div class="mt-2 grid gap-2" data-options="${esc(f.id)}">
             ${f.options
               .map(
                 (o) => `
-              <button type="button" data-id="${esc(f.id)}" data-value="${esc(String(o))}" class="${optionButton(
-                multi ? state.values[f.id]?.includes(o) : state.values[f.id] === o,
-                true,
-              )}">
+              <button type="button" data-id="${esc(f.id)}" data-value="${esc(String(o))}" aria-pressed="${picked(o)}" class="${optionButton(picked(o))}">
                 <span class="grid size-4 shrink-0 place-items-center border ${multi ? "rounded" : "rounded-full"} ${
-                  multi ? state.values[f.id]?.includes(o) : state.values[f.id] === o
-                    ? "border-white bg-white/20 text-white"
-                    : "border-slate-400 text-transparent"
+                  picked(o) ? "border-amber-600 bg-amber-600 text-white" : "border-slate-400 text-transparent"
                 }">
                   <svg viewBox="0 0 24 24" class="size-3" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>
                 </span>
@@ -172,6 +187,7 @@
 
       function render(missingId) {
         const form = state.form;
+        document.title = form.title;
         document.getElementById("form-title").textContent = form.title;
         if (form.description) {
           const d = document.getElementById("form-description");
@@ -184,7 +200,7 @@
           .map(
             (s) => `
           <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 class="font-semibold">${esc(s.title)}</h2>
+            <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-500">${esc(s.title)}</h2>
             ${s.description ? `<p class="mt-0.5 text-xs text-slate-500">${esc(s.description)}</p>` : ""}
             <div class="${s.description ? "mt-4" : "mt-3"} space-y-5">
               ${s.fields.map((f) => editors(f, null, f.id === missingId)).join("")}

@@ -61,6 +61,12 @@
   },
   "changelog": [
     {
+      "version": "v1.2",
+      "date": "Oct 6, 2026",
+      "title": "ui-bridge: forms that feel at home on a phone",
+      "description": "The form page gets the site typeface and amber accent, larger tap targets, inputs that do not zoom on focus, and labels you can tap."
+    },
+    {
       "version": "v1.1",
       "date": "Oct 4, 2026",
       "title": "ui-bridge: forms for any skill",

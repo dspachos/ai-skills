@@ -2,7 +2,7 @@
 window.AI_SKILLS = {
   "repo": "dspachos/ai-skills",
   "siteUrl": "https://dspachos.github.io/ai-skills/",
-  "generatedAt": "2026-10-04T06:11:41.047Z",
+  "generatedAt": "2026-10-06T08:11:52.486Z",
   "groups": [
     {
       "name": "Code review",
@@ -98,6 +98,12 @@ window.AI_SKILLS = {
   ],
   "skillCount": 2,
   "changelog": [
+    {
+      "version": "v1.2",
+      "date": "Oct 6, 2026",
+      "title": "ui-bridge: forms that feel at home on a phone",
+      "description": "The form page gets the site typeface and amber accent, larger tap targets, inputs that do not zoom on focus, and labels you can tap."
+    },
     {
       "version": "v1.1",
       "date": "Oct 4, 2026",
