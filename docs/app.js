@@ -110,7 +110,7 @@
     var chip = '<span class="hidden shrink-0 rounded-sm border border-line bg-muted px-2 py-1 font-mono text-xs font-medium text-fg-body sm:inline-block">/' + skill.slug + "</span>";
     var arrow = '<span class="size-4 shrink-0 text-fg-faint transition-all duration-300 group-hover:translate-x-1 group-hover:text-foreground motion-reduce:transform-none motion-reduce:transition-none">' + svg(STROKE["arrow-right"]) + "</span>";
     var thumb = '<span class="flex size-10 shrink-0 items-center justify-center rounded-lg border border-line bg-accent-wash text-foreground dark:bg-accent-panel dark:text-accent-fill">' + svg(STROKE[skill.icon] || STROKE.eye, "size-5") + "</span>";
-    return '<a href="/ai-skills/skill/?slug=' + encodeURIComponent(skill.slug) + '" class="group flex items-center gap-4 rounded-sm border-b border-line py-3.5 transition-colors last:border-b-0 hover:bg-hover-fill focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-line-strong md:-mx-4 md:px-4">'
+    return '<a href="/ai-skills/skill/?slug=' + encodeURIComponent(skill.slug) + '" class="group flex items-center gap-4 rounded-sm border-b border-line-soft py-3.5 transition-colors last:border-b-0 hover:bg-hover-fill focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-line-strong md:-mx-4 md:px-4">'
       + thumb
       + '<span class="flex min-w-0 flex-1 flex-col gap-0.5"><span class="block text-balance text-base font-medium leading-snug">The /' + skill.slug + " Skill</span>"
       + '<span class="mt-0.5 block text-sm leading-relaxed text-fg-muted">' + skill.tagline + "</span></span>"
@@ -121,13 +121,16 @@
     var mount = document.getElementById("skills-groups");
     if (!mount) return;
 
-    mount.innerHTML = DATA.groups.map(function (group) {
+    mount.innerHTML = DATA.groups.map(function (group, i) {
       var start = group.skills.find(function (s) { return s.slug === group.start; }) || group.skills[0];
       var startLink = start
         ? '<a href="/ai-skills/skill/?slug=' + encodeURIComponent(start.slug) + '" class="mt-2.5 inline-flex items-center gap-1.5 font-mono text-xs text-fg-subtle transition-colors hover:text-foreground">Start with <span class="font-medium">/' + start.slug + "</span> →</a>"
         : "";
-      return '<div class="mt-10 first:mt-8">'
+      return '<div class="mt-12 border-t border-line pt-8 first:mt-8 first:border-t-0 first:pt-0">'
+        + '<div class="flex items-baseline gap-2.5">'
+        + '<span class="font-mono text-xs font-medium text-fg-faint">' + String(i + 1).padStart(2, "0") + "</span>"
         + '<h3 class="text-base font-bold leading-[1.3] tracking-[-0.018em]">' + group.name + "</h3>"
+        + "</div>"
         + '<p class="mt-1 max-w-[52ch] text-sm leading-relaxed text-fg-muted">' + group.description + "</p>"
         + startLink
         + '<div class="mt-3 border-t border-line-soft">' + group.skills.map(skillRow).join("") + "</div>"
