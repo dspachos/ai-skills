@@ -12,6 +12,7 @@ needs. No build step, no lock-in. Read them, edit them, delete them.
 | --- | --- | --- |
 | [visual-review](skills/visual-review/) | `/visual-review` | Review a PR, a commit, two branches or your uncommitted changes on a local web page. Comment on each finding; the comments drive the next step. |
 | [ui-bridge](skills/ui-bridge/) | `/ui-bridge` | Turn a set of questions into a local form page. The agent writes `form.json`; your answers come back as `answers.json`. |
+| [usability-review](skills/usability-review/) | `/usability-review` | Check an app against Nielsen's ten usability heuristics, on a local page with screenshots and a coverage table. Comment on each finding; the comments drive the fixes. |
 
 ## Install
 
@@ -40,8 +41,8 @@ claude plugin install ai-skills@dspachos-ai-skills
 Or copy a skill folder by hand into your agent's skills directory, for
 example `~/.agents/skills/visual-review/`.
 
-Note: `visual-review` and `ui-bridge` run a local server through Node and
-need Node 22.18 or later.
+Note: `visual-review`, `ui-bridge` and `usability-review` run a local server
+through Node and need Node 22.18 or later.
 
 ## License
 

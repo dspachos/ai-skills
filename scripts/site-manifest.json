@@ -8,6 +8,11 @@
       "start": "visual-review"
     },
     {
+      "name": "Design review",
+      "description": "Read the interface the way a user does, and decide what to fix.",
+      "start": "usability-review"
+    },
+    {
       "name": "Building blocks",
       "description": "Generic pieces that other skills build on.",
       "start": "ui-bridge"
@@ -57,9 +62,36 @@
       "tagline": "Review a change on a local web page. Comment on each finding, one screen at a time. The comments drive what happens next.",
       "icon": "eye",
       "requires": ["Node 22.18+"]
+    },
+    "usability-review": {
+      "group": "Design review",
+      "tagline": "Check any app against Nielsen's ten usability heuristics. Findings on a local page with screenshots; your comments drive the fixes.",
+      "icon": "layout",
+      "requires": ["Node 22.18+", "Screenshots of the app"],
+      "examples": [
+        { "command": "/usability-review", "note": "The agent asks what to review and how you will provide screenshots." },
+        { "command": "check my app against the ten usability heuristics", "note": "A heuristic evaluation of the key screens, with evidence and a verdict." },
+        { "command": "/usability-review the checkout flow, screenshots attached", "note": "The agent copies the screenshots in, evaluates them, and opens the page." },
+        { "command": "run a heuristic evaluation of https://example.com", "note": "The agent captures or asks for the key screens, then reviews." }
+      ],
+      "lead": {
+        "intro": "Nielsen's ten heuristics, applied to your screens, on a page you can comment on.",
+        "points": [
+          "<strong>Ten heuristics, one pass:</strong> visibility, control, consistency, error prevention, memory load, and the rest, each checked against real screenshots.",
+          "<strong>Evidence first:</strong> every finding points at a screenshot or the exact wording on screen.",
+          "<strong>Coverage you can trust:</strong> the page shows which heuristics were fully checked, which were limited, and which were not.",
+          "<strong>Your comments drive the fixes:</strong> agree, disagree, or change the ask. The agent reads them as instructions."
+        ]
+      }
     }
   },
   "changelog": [
+    {
+      "version": "v1.3",
+      "date": "Oct 16, 2026",
+      "title": "usability-review: the ten heuristics on a page",
+      "description": "A new skill checks an app against Nielsen's ten usability heuristics. Findings come with screenshots and a coverage table, you comment on each one, and the comments drive the fixes."
+    },
     {
       "version": "v1.2",
       "date": "Oct 6, 2026",
